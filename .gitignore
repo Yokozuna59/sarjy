@@ -1,0 +1,16 @@
+# dependencies
+/node_modules
+.pnpm-debug.log*
+
+# next.js
+/.next/
+next-env.d.ts
+
+# typescript
+*.tsbuildinfo
+
+# env files
+.env*
+
+# vercel
+.vercel
