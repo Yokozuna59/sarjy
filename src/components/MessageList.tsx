@@ -13,7 +13,7 @@ export function MessageList({ messages }: MessageListProps) {
         <p
           className={cn(
             "flex flex-1 items-center justify-center text-center",
-            "text-zinc-600 dark:text-zinc-400",
+            "text-balance text-zinc-600 dark:text-zinc-400",
           )}
         >
           Book a padel court, a football pitch or a coffee shop table. Sarjy
