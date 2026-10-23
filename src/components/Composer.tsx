@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChangeEvent, KeyboardEvent, SubmitEvent } from "react";
+import type { VoiceHandlers } from "~/hooks/use-voice";
 import { ArrowUp } from "lucide-react";
 import { useRef, useState } from "react";
 import { IconButton } from "~/components/IconButton";
@@ -11,10 +12,10 @@ import { MAX_MESSAGE_LENGTH } from "~/lib/turn";
 interface ComposerProps {
   disabled: boolean;
   onSend: (text: string) => void;
-  onVoice: (wav: Blob) => void;
+  voice: VoiceHandlers;
 }
 
-export function Composer({ disabled, onSend, onVoice }: ComposerProps) {
+export function Composer({ disabled, onSend, voice }: ComposerProps) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -70,7 +71,7 @@ export function Composer({ disabled, onSend, onVoice }: ComposerProps) {
           "bg-transparent outline-none",
         )}
       />
-      <VoiceButton onSpeech={onVoice} />
+      <VoiceButton voice={voice} />
       <IconButton
         type="submit"
         variant="primary"

@@ -1,5 +1,6 @@
 "use client";
 
+import type { VoiceHandlers } from "~/hooks/use-voice";
 import { LoaderCircle, Mic } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -19,14 +20,14 @@ const ListeningButton = dynamic(
 );
 
 interface VoiceButtonProps {
-  onSpeech: (wav: Blob) => void;
+  voice: VoiceHandlers;
 }
 
-export function VoiceButton({ onSpeech }: VoiceButtonProps) {
+export function VoiceButton({ voice }: VoiceButtonProps) {
   const [on, setOn] = useState(false);
 
   if (on) {
-    return <ListeningButton onSpeech={onSpeech} onStop={() => setOn(false)} />;
+    return <ListeningButton voice={voice} onStop={() => setOn(false)} />;
   }
 
   return (

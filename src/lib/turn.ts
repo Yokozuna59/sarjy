@@ -5,7 +5,7 @@ export const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
 
 export interface TurnResponse {
   userText: string;
-  reply: { text: string };
+  reply: { text: string; sentences: string[] };
 }
 
 export interface TurnError {

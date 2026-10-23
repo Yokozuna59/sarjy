@@ -1,6 +1,8 @@
 import type { TurnResponse } from "~/lib/turn";
 import * as z from "zod";
+import { splitSentences } from "~/lib/sentences";
 import { MAX_AUDIO_BYTES, MAX_MESSAGE_LENGTH } from "~/lib/turn";
+import { friendlyError } from "~/services/openai";
 import { transcribe } from "~/services/stt";
 
 export const maxDuration = 60;
@@ -21,7 +23,14 @@ export async function POST(request: Request) {
   const contentType = request.headers.get("content-type") ?? "";
   const isAudio = contentType.startsWith("multipart/form-data");
 
-  const userText = isAudio ? await readAudio(request) : await readText(request);
+  let userText: string | null;
+  try {
+    userText = isAudio ? await readAudio(request) : await readText(request);
+  } catch (error) {
+    const message = friendlyError(error);
+    if (!message) throw error;
+    return Response.json({ error: message }, { status: 503 });
+  }
   if (userText === null) {
     const error = isAudio ? errors.audio : errors.text;
     return Response.json({ error }, { status: 400 });
@@ -31,9 +40,10 @@ export async function POST(request: Request) {
   }
 
   // Echo until the LLM and the flow engine are wired in.
+  const text = `You said: ${userText}`;
   const response: TurnResponse = {
     userText,
-    reply: { text: `You said: ${userText}` },
+    reply: { text, sentences: splitSentences(text) },
   };
   return Response.json(response);
 }

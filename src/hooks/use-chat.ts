@@ -7,9 +7,13 @@ export interface ChatMessage {
   text: string;
 }
 
+interface UseChatOptions {
+  onReply: (sentences: string[]) => void;
+}
+
 const FALLBACK_ERROR = "Sorry, something went wrong. Please try again.";
 
-export function useChat() {
+export function useChat({ onReply }: UseChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sending, setSending] = useState(false);
   const nextId = useRef(0);
@@ -32,6 +36,11 @@ export function useChat() {
 
   async function postTurn(body: string | FormData) {
     const isAudio = body instanceof FormData;
+    const reply = (text: string, sentences = [text]) => {
+      addMessage("assistant", text);
+      onReply(sentences);
+    };
+
     setSending(true);
     try {
       const response = await fetch("/api/turn", {
@@ -41,13 +50,13 @@ export function useChat() {
       });
       const data: TurnResponse | TurnError = await response.json();
       if ("error" in data) {
-        addMessage("assistant", data.error);
+        reply(data.error);
         return;
       }
       if (isAudio) addMessage("user", data.userText);
-      addMessage("assistant", data.reply.text);
+      reply(data.reply.text, data.reply.sentences);
     } catch {
-      addMessage("assistant", FALLBACK_ERROR);
+      reply(FALLBACK_ERROR);
     } finally {
       setSending(false);
     }

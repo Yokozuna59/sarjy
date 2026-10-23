@@ -1,20 +1,21 @@
+import type { VoiceHandlers } from "~/hooks/use-voice";
 import { LoaderCircle, Mic, MicOff } from "lucide-react";
 import { IconButton } from "~/components/IconButton";
 import { useVoice } from "~/hooks/use-voice";
 
 interface ListeningButtonProps {
-  onSpeech: (wav: Blob) => void;
+  voice: VoiceHandlers;
   onStop: () => void;
 }
 
-export function ListeningButton({ onSpeech, onStop }: ListeningButtonProps) {
-  const voice = useVoice(onSpeech);
+export function ListeningButton({ voice, onStop }: ListeningButtonProps) {
+  const mic = useVoice(voice);
 
-  if (voice.errored) {
+  if (mic.errored) {
     return (
       <IconButton
         variant="outline"
-        label={`Microphone unavailable: ${voice.errored}`}
+        label={`Microphone unavailable: ${mic.errored}`}
         onClick={onStop}
       >
         <MicOff className="size-5 text-red-600 dark:text-red-400" />
@@ -22,7 +23,7 @@ export function ListeningButton({ onSpeech, onStop }: ListeningButtonProps) {
     );
   }
 
-  if (voice.loading) {
+  if (mic.loading) {
     return (
       <IconButton variant="outline" label="Starting the microphone" disabled>
         <LoaderCircle className="size-5 animate-spin" />
@@ -35,7 +36,7 @@ export function ListeningButton({ onSpeech, onStop }: ListeningButtonProps) {
       variant="recording"
       label="Stop listening"
       onClick={onStop}
-      className={voice.userSpeaking ? "animate-pulse" : undefined}
+      className={mic.userSpeaking ? "animate-pulse" : undefined}
     >
       <Mic className="size-5" />
     </IconButton>
