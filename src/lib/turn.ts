@@ -7,3 +7,7 @@ export interface TurnResponse {
   userText: string;
   reply: { text: string };
 }
+
+export interface TurnError {
+  error: string;
+}

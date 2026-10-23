@@ -3,15 +3,18 @@
 import type { ChangeEvent, KeyboardEvent, SubmitEvent } from "react";
 import { ArrowUp } from "lucide-react";
 import { useRef, useState } from "react";
+import { IconButton } from "~/components/IconButton";
+import { VoiceButton } from "~/components/VoiceButton";
 import { cn } from "~/lib/cn";
 import { MAX_MESSAGE_LENGTH } from "~/lib/turn";
 
 interface ComposerProps {
   disabled: boolean;
   onSend: (text: string) => void;
+  onVoice: (wav: Blob) => void;
 }
 
-export function Composer({ disabled, onSend }: ComposerProps) {
+export function Composer({ disabled, onSend, onVoice }: ComposerProps) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -67,20 +70,15 @@ export function Composer({ disabled, onSend }: ComposerProps) {
           "bg-transparent outline-none",
         )}
       />
-      <button
+      <VoiceButton onSpeech={onVoice} />
+      <IconButton
         type="submit"
+        variant="primary"
+        label="Send"
         disabled={disabled || !text.trim()}
-        aria-label="Send"
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-full",
-          "bg-zinc-900 text-white disabled:opacity-30",
-          "enabled:cursor-pointer enabled:hover:bg-zinc-700",
-          "dark:bg-zinc-100 dark:text-zinc-900",
-          "dark:enabled:hover:bg-zinc-300",
-        )}
       >
         <ArrowUp className="size-5" />
-      </button>
+      </IconButton>
     </form>
   );
 }

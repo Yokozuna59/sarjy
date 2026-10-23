@@ -1,4 +1,4 @@
-import type { TurnResponse } from "~/lib/turn";
+import type { TurnError, TurnResponse } from "~/lib/turn";
 import { useRef, useState } from "react";
 
 export interface ChatMessage {
@@ -6,6 +6,8 @@ export interface ChatMessage {
   role: "user" | "assistant";
   text: string;
 }
+
+const FALLBACK_ERROR = "Sorry, something went wrong. Please try again.";
 
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -17,22 +19,35 @@ export function useChat() {
     setMessages((current) => [...current, { id, role, text }]);
   }
 
-  async function send(text: string) {
+  function send(text: string) {
     addMessage("user", text);
+    return postTurn(JSON.stringify({ text }));
+  }
+
+  function sendAudio(wav: Blob) {
+    const form = new FormData();
+    form.append("audio", wav, "speech.wav");
+    return postTurn(form);
+  }
+
+  async function postTurn(body: string | FormData) {
+    const isAudio = body instanceof FormData;
     setSending(true);
     try {
       const response = await fetch("/api/turn", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        headers: isAudio ? undefined : { "Content-Type": "application/json" },
+        body,
       });
-      if (!response.ok) {
-        throw new Error(`/api/turn answered ${response.status}`);
+      const data: TurnResponse | TurnError = await response.json();
+      if ("error" in data) {
+        addMessage("assistant", data.error);
+        return;
       }
-      const data: TurnResponse = await response.json();
+      if (isAudio) addMessage("user", data.userText);
       addMessage("assistant", data.reply.text);
     } catch {
-      addMessage("assistant", "Sorry, something went wrong. Please try again.");
+      addMessage("assistant", FALLBACK_ERROR);
     } finally {
       setSending(false);
     }
@@ -42,5 +57,5 @@ export function useChat() {
     setMessages([]);
   }
 
-  return { messages, sending, send, clear };
+  return { messages, sending, send, sendAudio, clear };
 }

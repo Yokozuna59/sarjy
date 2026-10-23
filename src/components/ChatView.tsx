@@ -7,15 +7,15 @@ import { MessageList } from "~/components/MessageList";
 import { useChat } from "~/hooks/use-chat";
 
 export function ChatView() {
-  const { messages, sending, send, clear } = useChat();
+  const { messages, sending, send, sendAudio, clear } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const area = scrollRef.current;
-    if (area && messages.length > 0) {
+    if (area && (messages.length > 0 || sending)) {
       area.scrollTo({ top: area.scrollHeight, behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, sending]);
 
   return (
     <>
@@ -25,9 +25,9 @@ export function ChatView() {
       />
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4">
-          <MessageList messages={messages} />
+          <MessageList messages={messages} pending={sending} />
           <div className="sticky bottom-0 bg-background pb-4">
-            <Composer disabled={sending} onSend={send} />
+            <Composer disabled={sending} onSend={send} onVoice={sendAudio} />
           </div>
         </div>
       </div>
