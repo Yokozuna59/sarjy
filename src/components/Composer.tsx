@@ -1,5 +1,3 @@
-"use client";
-
 import type { ChangeEvent, KeyboardEvent, SubmitEvent } from "react";
 import type { VoiceHandlers } from "~/hooks/use-voice";
 import { ArrowUp } from "lucide-react";

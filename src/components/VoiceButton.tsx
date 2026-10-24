@@ -1,5 +1,3 @@
-"use client";
-
 import type { VoiceHandlers } from "~/hooks/use-voice";
 import { LoaderCircle, Mic } from "lucide-react";
 import dynamic from "next/dynamic";
