@@ -13,7 +13,7 @@ The venues are fictional and labelled "Sample venue". Nothing is really booked.
 - **Books with a real weather check.** It checks feels-like temperature, wind and rain chance for every hour the booking covers, in the city you choose and in that city's local time.
 - **Handles going off-script.** Ask about the weather mid-booking, change your mind, pick an offer, or cancel, and it keeps track.
 - **Shows the booking as it fills in.** A strip above the text box lists each detail, marks the one Sarjy is asking for, and changes when you correct something.
-- **Shows booking cards** after a booking and when you ask "What have I booked?"
+- **Shows booking cards** after a booking and when you ask "What have I booked?" Outdoor cards show the forecast that passed the check.
 
 ## Try it
 
@@ -125,7 +125,7 @@ Everything is stored per browser, so availability isn't shared between visitors.
 | `sarjy:messages`   | The chat: `{ id, role, text, cards? }[]`                                                          |
 | `sarjy:memories`   | Facts about you, like `{ name: "Sara", city: "Riyadh" }`. Kept by New chat, cleared by Forget me. |
 | `sarjy:flow`       | The `FlowState` above. Cleared by New chat.                                                       |
-| `sarjy:bookings`   | `{ venueId, city, date, hour, minutes, groupSize, name }[]`                                       |
+| `sarjy:bookings`   | `{ venueId, city, date, hour, minutes, groupSize, name, weather }[]`                              |
 
 Dates are `YYYY-MM-DD`, and booking hours are local to the booking's city.
 
