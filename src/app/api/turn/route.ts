@@ -1,5 +1,9 @@
+import type { Booking, FlowState } from "~/engine/types";
 import type { HistoryMessage, Memories, TurnResponse } from "~/lib/turn";
 import * as z from "zod";
+import { MAX_OFFERS } from "~/engine/config";
+import { IDLE } from "~/engine/engine";
+import { VENUES } from "~/engine/venues";
 import { replyFor } from "~/lib/reply";
 import { splitSentences } from "~/lib/sentences";
 import {
@@ -25,10 +29,47 @@ const historySchema = z
   .max(HISTORY_LENGTH)
   .default([]);
 
+const slotSchema = z.object({
+  venueId: z.string().refine((id) => VENUES.some((venue) => venue.id === id)),
+  city: z.string().max(100),
+  date: z.iso.date(),
+  hour: z.number().int().min(0).max(23),
+});
+
+const bookingSchema = slotSchema.extend({
+  minutes: z.number(),
+  groupSize: z.number(),
+  name: z.string().max(100),
+});
+
+const flowSchema = z
+  .object({
+    status: z.enum(["idle", "collecting", "offering", "confirming"]),
+    fields: z.object({
+      activity: z.enum(["padel", "football", "cafe"]).optional(),
+      city: z.string().max(100).optional(),
+      date: z.string().optional(),
+      time: z.string().optional(),
+      group_size: z.number().optional(),
+      booking_name: z.string().max(100).optional(),
+      setting: z.enum(["indoor", "outdoor"]).optional(),
+    }),
+    pending: z
+      .enum(["activity", "city", "date", "time", "group_size", "booking_name"])
+      .nullable(),
+    offers: z.array(slotSchema).max(MAX_OFFERS),
+    draft: bookingSchema.nullable(),
+  })
+  .default(IDLE);
+
+const bookingsSchema = z.array(bookingSchema).max(100).default([]);
+
 const textSchema = z.object({
   text: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
   memories: memoriesSchema,
   history: historySchema,
+  flow: flowSchema,
+  bookings: bookingsSchema,
 });
 
 const audioSchema = z.file().min(1).max(MAX_AUDIO_BYTES).mime("audio/wav");
@@ -43,6 +84,8 @@ interface TurnInput {
   text: string;
   memories: Memories;
   history: HistoryMessage[];
+  flow: FlowState;
+  bookings: Booking[];
 }
 
 export async function POST(request: Request) {
@@ -63,13 +106,22 @@ export async function POST(request: Request) {
       input.text,
       input.memories,
       input.history,
+      input.flow,
     );
     const facts = interpretation.remember.map((f) => [f.key, f.value]);
-    const text = await replyFor(interpretation, input.memories);
+    const memories = { ...input.memories, ...Object.fromEntries(facts) };
+    const reply = await replyFor(
+      interpretation,
+      memories,
+      input.flow,
+      input.bookings,
+    );
     const response: TurnResponse = {
       userText: input.text,
-      reply: { text, sentences: splitSentences(text) },
-      memories: { ...input.memories, ...Object.fromEntries(facts) },
+      reply: { text: reply.text, sentences: splitSentences(reply.text) },
+      memories,
+      flow: reply.flow,
+      bookings: reply.bookings,
     };
     return Response.json(response);
   } catch (error) {
@@ -89,11 +141,23 @@ async function readAudio(request: Request): Promise<TurnInput | null> {
   const audio = audioSchema.safeParse(form?.get("audio"));
   const memories = memoriesSchema.safeParse(parseJson(form?.get("memories")));
   const history = historySchema.safeParse(parseJson(form?.get("history")));
-  if (!audio.success || !memories.success || !history.success) return null;
+  const flow = flowSchema.safeParse(parseJson(form?.get("flow")));
+  const bookings = bookingsSchema.safeParse(parseJson(form?.get("bookings")));
+  if (
+    !audio.success ||
+    !memories.success ||
+    !history.success ||
+    !flow.success ||
+    !bookings.success
+  ) {
+    return null;
+  }
   return {
     text: await transcribe(audio.data),
     memories: memories.data,
     history: history.data,
+    flow: flow.data,
+    bookings: bookings.data,
   };
 }
 

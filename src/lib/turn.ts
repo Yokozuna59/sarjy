@@ -1,3 +1,5 @@
+import type { Booking, FlowState } from "~/engine/types";
+
 export const MAX_MESSAGE_LENGTH = 1000;
 
 // Vercel rejects request bodies over 4.5 MB.
@@ -17,6 +19,8 @@ export interface TurnResponse {
   userText: string;
   reply: { text: string; sentences: string[] };
   memories: Memories;
+  flow: FlowState;
+  bookings: Booking[];
 }
 
 export interface TurnError {

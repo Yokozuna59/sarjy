@@ -1,33 +1,119 @@
+import type { Booking, Context, FlowState } from "~/engine/types";
 import type { Memories } from "~/lib/turn";
 import type { Interpretation } from "~/services/llm";
-import { addDays, today, weekday } from "~/lib/time";
-import { geocode, getDayForecast } from "~/services/weather";
+import { FORECAST_DAYS } from "~/engine/config";
+import { resume, step } from "~/engine/engine";
+import { bookingsText, hourText, render } from "~/engine/templates";
+import { VENUES } from "~/engine/venues";
+import { addDays, currentHour, today, weekday } from "~/lib/time";
+import { geocode, getDayForecast, getHourWeather } from "~/services/weather";
 
-const FORECAST_DAYS = 7;
+export interface Reply {
+  text: string;
+  flow: FlowState;
+  bookings: Booking[];
+}
 
-// Templates decide the reply until the flow engine does (step 6).
+const INTRO =
+  "I can book a padel court, a football pitch or a coffee shop table in " +
+  "any city, and I check the weather first. What would you like?";
+
+// The engine handles anything about the booking. Otherwise Sarjy answers
+// the question, then picks the booking back up where it was.
 export async function replyFor(
-  { question, remember }: Interpretation,
+  interpretation: Interpretation,
   memories: Memories,
-): Promise<string> {
+  flow: FlowState,
+  bookings: Booking[],
+): Promise<Reply> {
+  const ctx = bookingContext(memories, bookings);
+  const { state, action } = await step(flow, interpretation.booking, ctx);
+  if (action.type !== "none") {
+    const saved =
+      action.type === "booked" ? [...bookings, action.booking] : bookings;
+    return { text: render(action, ctx), flow: state, bookings: saved };
+  }
+
+  // A weather question mid-booking is usually about the booking's city.
+  const city = state.fields.city ?? memories.city;
+  const answer = await answerFor(interpretation, city, ctx);
+  if (state.status === "idle") {
+    const general = interpretation.question?.kind === "general";
+    const text = general ? `${answer} ${INTRO}` : (answer ?? INTRO);
+    return { text, flow: state, bookings };
+  }
+  const back = render(resume(state), ctx);
+  const text = answer ? `${answer} Back to your booking. ${back}` : back;
+  return { text, flow: state, bookings };
+}
+
+function bookingContext(memories: Memories, bookings: Booking[]): Context {
+  return {
+    today: today(),
+    // Falls back to Riyadh's clock if the city can't be looked up.
+    nowIn: async (city) => {
+      const place = await geocode(city).catch(() => null);
+      const zone = place?.timezone;
+      return { date: today(zone), hour: currentHour(zone) };
+    },
+    venues: VENUES,
+    bookings,
+    userName: memories.name ?? null,
+    userCity: memories.city ?? null,
+    findCity: async (name) => {
+      const place = await geocode(name).catch(() => null);
+      return place?.name ?? null;
+    },
+    // No forecast means no outdoor booking, so a failed fetch is safe.
+    getWeather: async (city, date, hour) => {
+      try {
+        const place = await geocode(city);
+        if (!place) return null;
+        return await getHourWeather(
+          place.latitude,
+          place.longitude,
+          date,
+          hour,
+        );
+      } catch {
+        return null;
+      }
+    },
+  };
+}
+
+async function answerFor(
+  { question, remember }: Interpretation,
+  city: string | undefined,
+  ctx: Context,
+): Promise<string | null> {
   if (question?.kind === "memory") {
     return question.answer ?? "I don't know that yet.";
   }
   if (question?.kind === "weather") {
-    return weatherReply(question.place ?? memories.city, question.date);
+    return weatherReply(question.place ?? city, question.date, question.times);
   }
-  if (question) return "I can't check that yet.";
+  if (question?.kind === "bookings") return bookingsText(ctx.bookings, ctx);
+  // The LLM answers small talk only. Anything else gets this.
+  if (question) {
+    return (
+      question.answer ?? "Sorry, I can only help with bookings and the weather."
+    );
+  }
 
   const name = remember.find((fact) => fact.key === "name")?.value;
   if (name) return `Nice to meet you, ${name}. I'll remember that.`;
   if (remember.length > 0) return "Got it. I'll remember that.";
-  return (
-    "Booking is coming soon. " +
-    "For now, tell me about yourself and I'll remember it."
-  );
+  return null;
 }
 
-async function weatherReply(place: string | undefined, date: string | null) {
+const TIME_FORMAT = /^([01]\d|2[0-3]):\d{2}$/;
+
+async function weatherReply(
+  place: string | undefined,
+  date: string | null,
+  times: string[],
+) {
   if (!place) return "Which city? Tell me, and I'll check the weather.";
 
   const now = today();
@@ -39,13 +125,41 @@ async function weatherReply(place: string | undefined, date: string | null) {
   try {
     const found = await geocode(place);
     if (!found) return `I couldn't find ${place}.`;
+    const label = `${dayLabel(day, now)} in ${found.name}`;
+
+    // One short sentence per hour asked about.
+    const hours = times
+      .filter((time) => TIME_FORMAT.test(time))
+      .slice(0, 3)
+      .map((time) => Number(time.slice(0, 2)));
+    if (hours.length > 0) {
+      const lines: string[] = [];
+      for (const hour of hours) {
+        const weather = await getHourWeather(
+          found.latitude,
+          found.longitude,
+          day,
+          hour,
+        );
+        if (!weather) continue;
+        const rain = weather.rainChance
+          ? `a rain chance of ${weather.rainChance}%`
+          : "no rain expected";
+        lines.push(
+          `${label} at ${hourText(hour)}: feels like ` +
+            `${weather.apparentTemperature} degrees, with ${rain}.`,
+        );
+      }
+      return lines.join(" ") || "I couldn't get the forecast for that time.";
+    }
+
     const forecast = await getDayForecast(found, day);
     const rain =
       forecast.rainChance < 10
         ? "and no rain expected"
-        : `with a ${forecast.rainChance}% chance of rain`;
+        : `with a rain chance of ${forecast.rainChance}%`;
     return (
-      `${dayLabel(day, now)} in ${found.name}: up to ` +
+      `${label}: up to ` +
       `${Math.round(forecast.high)} degrees, down to ` +
       `${Math.round(forecast.low)}, ${rain}.`
     );
