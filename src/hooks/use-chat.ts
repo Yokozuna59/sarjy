@@ -1,5 +1,6 @@
 import type { TurnError, TurnResponse } from "~/lib/turn";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useStoredState } from "~/hooks/use-stored-state";
 
 export interface ChatMessage {
   id: number;
@@ -14,13 +15,14 @@ interface UseChatOptions {
 const FALLBACK_ERROR = "Sorry, something went wrong. Please try again.";
 
 export function useChat({ onReply }: UseChatOptions) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useStoredState<ChatMessage[]>(
+    "sarjy:messages",
+    [],
+  );
   const [sending, setSending] = useState(false);
-  const nextId = useRef(0);
 
   function addMessage(role: ChatMessage["role"], text: string) {
-    const id = nextId.current++;
-    setMessages((current) => [...current, { id, role, text }]);
+    setMessages((current) => [...current, { id: current.length, role, text }]);
   }
 
   function send(text: string) {
