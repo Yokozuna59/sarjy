@@ -17,7 +17,7 @@ import { findOffers } from "~/engine/alternatives";
 import { BOOKING_MINUTES } from "~/engine/config";
 import { bookVenue } from "~/engine/flows/book-venue";
 import { checkDate, checkSlot } from "~/engine/rules";
-import { findVenue, settingOf } from "~/engine/venues";
+import { findVenue } from "~/engine/venues";
 
 export const IDLE: FlowState = {
   status: "idle",
@@ -169,9 +169,10 @@ async function confirm(
   ctx: Context,
 ): Promise<StepResult> {
   const venue = findVenue(booking.venueId, ctx.venues);
-  const weather = venue.outdoor
-    ? await ctx.getWeather(booking.city, booking.date, booking.hour)
-    : null;
+  const weather =
+    venue.setting === "outdoor"
+      ? await ctx.getWeather(booking.city, booking.date, booking.hour)
+      : null;
   return {
     state: {
       status: "confirming",
@@ -234,7 +235,7 @@ function pickVenue(
 ): Venue {
   const wanted = setting ?? "outdoor";
   const venue = ctx.venues.find(
-    (each) => each.activity === activity && settingOf(each) === wanted,
+    (each) => each.activity === activity && each.setting === wanted,
   );
   if (!venue) throw new Error(`No ${wanted} venue for ${activity}`);
   return venue;

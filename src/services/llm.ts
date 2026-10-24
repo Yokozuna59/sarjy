@@ -2,7 +2,7 @@ import type { FlowState } from "~/engine/types";
 import type { HistoryMessage, Memories } from "~/lib/turn";
 import { zodResponseFormat } from "openai/helpers/zod";
 import * as z from "zod";
-import { findVenue, settingOf, VENUES } from "~/engine/venues";
+import { findVenue, VENUES } from "~/engine/venues";
 import { today, weekday } from "~/lib/time";
 import { getClient, models } from "~/services/openai";
 
@@ -125,7 +125,7 @@ function describeFlow({ status, fields, pending, offers }: FlowState) {
     const venue = findVenue(offer.venueId, VENUES);
     const time = `${String(offer.hour).padStart(2, "0")}:00`;
     lines.push(
-      `Offer ${index}: ${venue.name} (${settingOf(venue)}), ` +
+      `Offer ${index}: ${venue.name} (${venue.setting}), ` +
         `${offer.city}, ${offer.date} at ${time}`,
     );
   }

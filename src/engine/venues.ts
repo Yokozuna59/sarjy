@@ -1,8 +1,4 @@
-import type { Setting, Venue } from "~/engine/types";
-
-export function settingOf(venue: Venue): Setting {
-  return venue.outdoor ? "outdoor" : "indoor";
-}
+import type { Venue } from "~/engine/types";
 
 // The engine gets its venues through ctx, so the list is passed in.
 export function findVenue(venueId: string, venues: Venue[]): Venue {
@@ -18,7 +14,7 @@ export const VENUES: Venue[] = [
     id: "padel-outdoor",
     name: "Open-air Padel Courts",
     activity: "padel",
-    outdoor: true,
+    setting: "outdoor",
     opensAt: 8,
     closesAt: 24,
     capacity: 4,
@@ -27,7 +23,7 @@ export const VENUES: Venue[] = [
     id: "padel-indoor",
     name: "Indoor Padel Club",
     activity: "padel",
-    outdoor: false,
+    setting: "indoor",
     opensAt: 8,
     closesAt: 24,
     capacity: 4,
@@ -36,7 +32,7 @@ export const VENUES: Venue[] = [
     id: "football-outdoor",
     name: "Open-air Football Pitch",
     activity: "football",
-    outdoor: true,
+    setting: "outdoor",
     opensAt: 8,
     closesAt: 24,
     capacity: 12,
@@ -45,7 +41,7 @@ export const VENUES: Venue[] = [
     id: "football-indoor",
     name: "Indoor Football Arena",
     activity: "football",
-    outdoor: false,
+    setting: "indoor",
     opensAt: 8,
     closesAt: 24,
     capacity: 12,
@@ -54,7 +50,7 @@ export const VENUES: Venue[] = [
     id: "cafe-outdoor",
     name: "Open-air Coffee Terrace",
     activity: "cafe",
-    outdoor: true,
+    setting: "outdoor",
     opensAt: 8,
     closesAt: 24,
     capacity: 8,
@@ -63,7 +59,7 @@ export const VENUES: Venue[] = [
     id: "cafe-indoor",
     name: "Indoor Coffee Lounge",
     activity: "cafe",
-    outdoor: false,
+    setting: "indoor",
     opensAt: 8,
     closesAt: 24,
     capacity: 8,

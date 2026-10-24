@@ -49,7 +49,7 @@ export async function checkSlot(
   );
   if (taken) return { rule: "taken" };
 
-  return venue.outdoor ? checkWeather(slot, minutes, ctx) : null;
+  return venue.setting === "outdoor" ? checkWeather(slot, minutes, ctx) : null;
 }
 
 function weatherFailure(weather: HourWeather): Failure | null {

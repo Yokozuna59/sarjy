@@ -12,7 +12,7 @@ export interface Venue {
   id: string;
   name: string;
   activity: Activity;
-  outdoor: boolean;
+  setting: Setting;
   opensAt: number;
   closesAt: number;
   capacity: number;
