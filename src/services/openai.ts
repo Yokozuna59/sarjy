@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
 // The SDK also reads OPENAI_BASE_URL, to use another OpenAI-compatible API.
-export const models = {
+export const MODELS = {
   stt: process.env.STT_MODEL || "gpt-4o-mini-transcribe",
   llm: process.env.LLM_MODEL || "gpt-6-luna",
   tts: process.env.TTS_MODEL || "gpt-4o-mini-tts",

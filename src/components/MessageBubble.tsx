@@ -7,12 +7,12 @@ interface MessageBubbleProps {
   message: ChatMessage;
 }
 
-const alignment: Record<ChatMessage["role"], string> = {
+const ALIGNMENT: Record<ChatMessage["role"], string> = {
   user: "self-end items-end",
   assistant: "self-start items-start",
 };
 
-const roleStyles: Record<ChatMessage["role"], string> = {
+const ROLE_STYLES: Record<ChatMessage["role"], string> = {
   user: "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900",
   assistant: "bg-zinc-100 dark:bg-zinc-800",
 };
@@ -20,14 +20,14 @@ const roleStyles: Record<ChatMessage["role"], string> = {
 export function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <li
-      className={cn("flex max-w-[80%] flex-col gap-2", alignment[message.role])}
+      className={cn("flex max-w-[80%] flex-col gap-2", ALIGNMENT[message.role])}
     >
       <div
         dir="auto"
         className={cn(
           "rounded-2xl px-4 py-2",
           "whitespace-pre-wrap wrap-anywhere",
-          roleStyles[message.role],
+          ROLE_STYLES[message.role],
         )}
       >
         {message.text}

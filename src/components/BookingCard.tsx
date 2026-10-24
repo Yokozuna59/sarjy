@@ -6,9 +6,10 @@ import {
   MapPin,
   Users,
 } from "lucide-react";
-import { VENUES } from "~/engine/venues";
+import { VENUES } from "~/data/venues";
+import { peopleText } from "~/engine/templates";
 import { cn } from "~/lib/cn";
-import { clockTime, peopleText, shortDate } from "~/lib/format";
+import { clockTime, shortDate } from "~/lib/time";
 
 interface BookingCardProps {
   booking: Booking;
@@ -66,7 +67,8 @@ export function BookingCard({ booking }: BookingCardProps) {
         )}
         <li className="flex items-center gap-2">
           <Users className="size-4 shrink-0" />
-          {peopleText(booking.groupSize)}, under {booking.name}
+          {booking.groupSize ? peopleText(booking.groupSize) : "Whole pitch"},
+          under {booking.name}
         </li>
       </ul>
     </article>

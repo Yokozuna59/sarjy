@@ -1,9 +1,10 @@
 import type { Activity, Field, FlowState } from "~/engine/types";
 import { CalendarDays } from "lucide-react";
-import { bookVenue } from "~/engine/flows/book-venue";
-import { VENUES } from "~/engine/venues";
+import { VENUES } from "~/data/venues";
+import { fieldsFor } from "~/engine/flows/book-venue";
+import { peopleText } from "~/engine/templates";
 import { cn } from "~/lib/cn";
-import { clockTime, peopleText, shortDate } from "~/lib/format";
+import { clockTime, shortDate } from "~/lib/time";
 
 const STATUS = {
   collecting: "Booking in progress",
@@ -66,7 +67,7 @@ export function BookingProgress({ flow }: BookingProgressProps) {
         {STATUS[flow.status]}
       </p>
       <ul className="flex flex-wrap gap-1.5">
-        {bookVenue.fields.map(({ name }) => (
+        {fieldsFor(fields.activity).map(({ name }) => (
           <li
             key={name}
             className={cn(

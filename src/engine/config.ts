@@ -5,7 +5,7 @@ export const FORECAST_DAYS = 7;
 
 export const BOOKING_MINUTES: Record<Activity, number> = {
   padel: 60,
-  football: 60,
+  football: 90,
   cafe: 90,
 };
 

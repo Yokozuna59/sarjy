@@ -1,17 +1,17 @@
 import type { Booking, Context, FlowState } from "~/engine/types";
 import type { Memories } from "~/lib/turn";
 import type { Interpretation } from "~/services/llm";
+import { VENUES } from "~/data/venues";
 import { FORECAST_DAYS } from "~/engine/config";
 import { resume, step } from "~/engine/engine";
+import { bookingsText, dayText, rainText, render } from "~/engine/templates";
 import {
-  bookingsText,
-  dayText,
-  hourText,
-  rainText,
-  render,
-} from "~/engine/templates";
-import { VENUES } from "~/engine/venues";
-import { addDays, currentHour, TIME_FORMAT, today } from "~/lib/time";
+  addDays,
+  clockTime,
+  currentHour,
+  TIME_FORMAT,
+  today,
+} from "~/lib/time";
 import { geocode, getDayWeather, getHourWeather } from "~/services/weather";
 
 export interface Reply {
@@ -149,7 +149,7 @@ async function weatherReply(
         const weather = await getHourWeather(found, day, hour);
         if (!weather) continue;
         lines.push(
-          `${label} at ${hourText(hour)}: feels like ` +
+          `${label} at ${clockTime(hour * 60)}: feels like ` +
             `${weather.apparentTemperature} degrees, with ` +
             `${rainText(weather.rainChance)}.`,
         );

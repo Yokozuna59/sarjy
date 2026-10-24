@@ -1,7 +1,7 @@
 import type { Context, Setting, Slot } from "~/engine/types";
+import { findVenue } from "~/data/venues";
 import { MAX_OFFERS } from "~/engine/config";
 import { checkSlot } from "~/engine/rules";
-import { findVenue } from "~/engine/venues";
 import { addDays } from "~/lib/time";
 
 // Slots near the request that pass every rule: every open hour that day
@@ -10,7 +10,7 @@ import { addDays } from "~/lib/time";
 // becomes "indoor at 4, or outdoor at 8" instead of a plain no.
 export async function findOffers(
   request: Slot,
-  groupSize: number,
+  groupSize: number | null,
   setting: Setting | undefined,
   ctx: Context,
 ): Promise<Slot[]> {

@@ -24,9 +24,33 @@ export function addDays(date: string, days: number): string {
   return next.toISOString().slice(0, 10);
 }
 
+// "Saturday"
 export function weekday(date: string): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     timeZone: "UTC",
   }).format(new Date(`${date}T00:00:00Z`));
+}
+
+// "Sat 24 Oct"
+export function shortDate(date: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${date}T00:00:00Z`));
+}
+
+// Minutes after midnight as "8 PM", "9:30 PM", "noon" or "midnight".
+export function clockTime(minutes: number): string {
+  const hour = Math.floor(minutes / 60) % 24;
+  const minute = minutes % 60;
+  if (minute === 0 && hour === 0) return "midnight";
+  if (minute === 0 && hour === 12) return "noon";
+  const suffix = hour < 12 ? "AM" : "PM";
+  const twelveHour = hour % 12 || 12;
+  return minute
+    ? `${twelveHour}:${String(minute).padStart(2, "0")} ${suffix}`
+    : `${twelveHour} ${suffix}`;
 }

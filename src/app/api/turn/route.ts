@@ -1,9 +1,9 @@
 import type { Booking, FlowState } from "~/engine/types";
 import type { HistoryMessage, Memories, TurnResponse } from "~/lib/turn";
 import * as z from "zod";
+import { VENUES } from "~/data/venues";
 import { MAX_OFFERS } from "~/engine/config";
 import { IDLE } from "~/engine/engine";
-import { VENUES } from "~/engine/venues";
 import { replyFor } from "~/lib/reply";
 import { splitSentences } from "~/lib/sentences";
 import {
@@ -45,7 +45,7 @@ const weatherSchema = z.object({
 
 const bookingSchema = slotSchema.extend({
   minutes: z.number(),
-  groupSize: z.number(),
+  groupSize: z.number().nullable(),
   name: z.string().max(100),
   // Bookings saved before the card showed the forecast have none.
   weather: weatherSchema.nullable().default(null),

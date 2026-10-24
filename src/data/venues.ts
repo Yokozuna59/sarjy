@@ -35,7 +35,7 @@ export const VENUES: Venue[] = [
     setting: "outdoor",
     opensAt: 8,
     closesAt: 24,
-    capacity: 12,
+    capacity: null,
   },
   {
     id: "football-indoor",
@@ -44,7 +44,7 @@ export const VENUES: Venue[] = [
     setting: "indoor",
     opensAt: 8,
     closesAt: 24,
-    capacity: 12,
+    capacity: null,
   },
   {
     id: "cafe-outdoor",

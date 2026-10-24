@@ -13,11 +13,11 @@ import type {
   StepResult,
   Venue,
 } from "~/engine/types";
+import { findVenue } from "~/data/venues";
 import { findOffers } from "~/engine/alternatives";
 import { BOOKING_MINUTES } from "~/engine/config";
-import { bookVenue } from "~/engine/flows/book-venue";
+import { fieldsFor } from "~/engine/flows/book-venue";
 import { checkDate, checkSlot } from "~/engine/rules";
-import { findVenue } from "~/engine/venues";
 import { DATE_FORMAT, TIME_FORMAT } from "~/lib/time";
 
 export const IDLE: FlowState = {
@@ -94,11 +94,13 @@ export async function step(
     return ask("time", { ...fields, time: undefined }, failure);
   }
 
-  const missing = bookVenue.fields.find((field) => !fields[field.name]);
+  const missing = fieldsFor(fields.activity).find(
+    (field) => !fields[field.name],
+  );
   if (missing) return ask(missing.name, fields);
 
-  const { activity, city, date, time, group_size, booking_name } = fields;
-  if (!activity || !city || !date || !time || !group_size || !booking_name) {
+  const { activity, city, date, time, booking_name } = fields;
+  if (!activity || !city || !date || !time || !booking_name) {
     throw new Error("The flow spec is missing a field");
   }
 
@@ -111,7 +113,7 @@ export async function step(
     date,
     hour: toHour(time),
     minutes: BOOKING_MINUTES[activity],
-    groupSize: group_size,
+    groupSize: fields.group_size ?? null,
     name: booking_name,
     weather: null,
   };

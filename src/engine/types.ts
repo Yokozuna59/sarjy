@@ -15,7 +15,8 @@ export interface Venue {
   setting: Setting;
   opensAt: number;
   closesAt: number;
-  capacity: number;
+  // Null when the whole space is booked, like a pitch.
+  capacity: number | null;
 }
 
 // What the user has told us so far. The keys are snake_case because the
@@ -35,6 +36,7 @@ export interface Fields {
 export interface FieldSpec {
   name: Field;
   ask: { en: string };
+  skipFor?: Activity[];
 }
 
 export interface FlowSpec {
@@ -52,7 +54,8 @@ export interface Slot {
 // A slot someone booked, or the draft waiting for their yes.
 export interface Booking extends Slot {
   minutes: number;
-  groupSize: number;
+  // Null when the flow didn't ask, like for football.
+  groupSize: number | null;
   name: string;
   // The first hour's forecast, as Sarjy said it. Null indoors.
   weather: HourWeather | null;

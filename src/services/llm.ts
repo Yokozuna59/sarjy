@@ -2,9 +2,9 @@ import type { FlowState } from "~/engine/types";
 import type { HistoryMessage, Memories } from "~/lib/turn";
 import { zodResponseFormat } from "openai/helpers/zod";
 import * as z from "zod";
-import { findVenue, VENUES } from "~/engine/venues";
+import { findVenue, VENUES } from "~/data/venues";
 import { today, weekday } from "~/lib/time";
-import { getClient, models } from "~/services/openai";
+import { getClient, MODELS } from "~/services/openai";
 
 interface LlmMessage {
   role: "system" | "user" | "assistant";
@@ -139,7 +139,7 @@ async function completeJson<Schema extends z.ZodType>(
   messages: LlmMessage[],
 ) {
   const completion = await getClient().chat.completions.parse({
-    model: models.llm,
+    model: MODELS.llm,
     messages,
     reasoning_effort: "none",
     // At the default temperature, a plain "9 p.m." was sometimes missed.

@@ -7,10 +7,9 @@ import type {
   HourWeather,
   Slot,
 } from "~/engine/types";
-import { bookVenue } from "~/engine/flows/book-venue";
-import { findVenue } from "~/engine/venues";
-import { peopleText } from "~/lib/format";
-import { addDays, weekday } from "~/lib/time";
+import { findVenue } from "~/data/venues";
+import { BOOK_VENUE } from "~/engine/flows/book-venue";
+import { addDays, clockTime, weekday } from "~/lib/time";
 
 type TemplateContext = Pick<Context, "today" | "venues">;
 
@@ -29,10 +28,13 @@ export function render(action: Action, ctx: TemplateContext): string {
     }
     case "confirm": {
       const { booking, weather } = action;
-      const people = peopleText(booking.groupSize);
-      const group = `for ${people}, under ${booking.name}`;
+      const details = [where(booking, ctx), when(booking, ctx)];
+      if (booking.groupSize) {
+        details.push(`for ${peopleText(booking.groupSize)}`);
+      }
+      details.push(`under ${booking.name}`);
       return sentences(
-        `${where(booking, ctx)}, ${when(booking, ctx)}, ${group}.`,
+        `${details.join(", ")}.`,
         weather && weatherText(weather),
         "Shall I book it?",
       );
@@ -61,8 +63,22 @@ export function bookingsText(bookings: Booking[], ctx: TemplateContext) {
   return sentences(`You have ${count}.`, ...lines);
 }
 
+export function dayText(date: string, today: string) {
+  if (date === today) return "today";
+  if (date === addDays(today, 1)) return "tomorrow";
+  return `on ${weekday(date)}`;
+}
+
+export function rainText(chance: number) {
+  return chance ? `a rain chance of ${chance} percent` : "no rain expected";
+}
+
+export function peopleText(count: number) {
+  return count === 1 ? "1 person" : `${count} people`;
+}
+
 function askText(field: Field) {
-  return bookVenue.fields.find((spec) => spec.name === field)?.ask.en ?? "";
+  return BOOK_VENUE.fields.find((spec) => spec.name === field)?.ask.en ?? "";
 }
 
 function failureText(failure: Failure | null) {
@@ -80,8 +96,8 @@ function failureText(failure: Failure | null) {
     case "too_many":
       return `That venue fits up to ${failure.capacity} people.`;
     case "closed": {
-      const opens = hourText(failure.opensAt);
-      const closes = hourText(failure.closesAt);
+      const opens = clockTime(failure.opensAt * 60);
+      const closes = clockTime(failure.closesAt * 60);
       return sentences(
         `It's open from ${opens} to ${closes}.`,
         "Bookings must end by closing.",
@@ -115,10 +131,6 @@ function weatherText(weather: HourWeather) {
   return `It should feel like ${feels} degrees, with ${rain}.`;
 }
 
-export function rainText(chance: number) {
-  return chance ? `a rain chance of ${chance} percent` : "no rain expected";
-}
-
 // Offers are all in the city the user asked for, so it isn't repeated.
 function slotText(slot: Slot, ctx: TemplateContext) {
   return `${findVenue(slot.venueId, ctx.venues).name} ${when(slot, ctx)}`;
@@ -129,19 +141,7 @@ function where(slot: Slot, ctx: TemplateContext) {
 }
 
 function when(slot: Slot, ctx: TemplateContext) {
-  return `${dayText(slot.date, ctx.today)} at ${hourText(slot.hour)}`;
-}
-
-export function dayText(date: string, today: string) {
-  if (date === today) return "today";
-  if (date === addDays(today, 1)) return "tomorrow";
-  return `on ${weekday(date)}`;
-}
-
-export function hourText(hour: number) {
-  if (hour === 0 || hour === 24) return "midnight";
-  if (hour === 12) return "noon";
-  return hour < 12 ? `${hour} AM` : `${hour - 12} PM`;
+  return `${dayText(slot.date, ctx.today)} at ${clockTime(slot.hour * 60)}`;
 }
 
 function sentences(...parts: (string | null)[]) {

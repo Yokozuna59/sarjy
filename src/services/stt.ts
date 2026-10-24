@@ -1,4 +1,4 @@
-import { getClient, models } from "~/services/openai";
+import { getClient, MODELS } from "~/services/openai";
 
 // Keeps accented English in English spelling, and spells the place names.
 const PROMPT =
@@ -9,7 +9,7 @@ const PROMPT =
 export async function transcribe(audio: File): Promise<string> {
   const transcription = await getClient().audio.transcriptions.create({
     file: audio,
-    model: models.stt,
+    model: MODELS.stt,
     language: "en",
     prompt: PROMPT,
   });
