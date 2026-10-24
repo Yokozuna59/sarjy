@@ -83,12 +83,12 @@ stateDiagram-v2
 1. **Merge** what you said into the fields. Corrections overwrite, so "make it Thursday" just replaces the date.
 2. **Fill from memory:** your name for the booking, and your city if Sarjy knows it.
 3. **Check each new value:** the city must exist (Open-Meteo geocoding), the date must be within the 7-day forecast, and times are on the hour.
-4. **Ask** for the first missing field, in the order set by the flow spec (`src/engine/flows/book-venue.ts`).
+4. **Ask** for the first missing field, in the order set by the flow spec (`src/engine/flows/book-venue.ts`). Football skips the group size, since a pitch is booked whole.
 5. **Check the slot** against every rule: not in the past (in the city's time zone), fits the group, inside opening hours, not overlapping another booking, and for outdoor venues, good weather for every hour it covers.
 6. **Decide:** confirm, ask again with the reason, or offer alternatives.
 7. **On "yes",** check the slot once more, then book.
 
-The rules and limits live in `src/engine/config.ts`: feels like 5 to 35 °C, wind up to 30 km/h, rain chance up to 40%. Padel and football last 60 minutes, coffee 90.
+The rules and limits live in `src/engine/config.ts`: feels like 5 to 35 °C, wind up to 30 km/h, rain chance up to 40%. Padel lasts 60 minutes, football and coffee 90. Padel courts fit 4 people and coffee tables 8.
 
 ### Alternatives, not a plain no
 
@@ -163,8 +163,9 @@ src/
   components/     chat UI, start screen, mic button, booking card,
                   booking progress strip
   hooks/          chat state, voice detection, speaker, browser storage
-  engine/         the flow engine: types, config, venues, flow spec,
-                  rules, alternatives, step, templates
+  engine/         the flow engine: types, config, flow spec, rules,
+                  alternatives, step, templates
+  data/           the six sample venues, passed to the engine through ctx
   services/       one file per external API: OpenAI (speech, LLM,
                   voice) and Open-Meteo
   lib/            the turn's reply logic, time helpers, shared types
