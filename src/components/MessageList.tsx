@@ -12,15 +12,21 @@ export function MessageList({ messages, pending }: MessageListProps) {
   return (
     <div aria-live="polite" className="flex flex-1 flex-col">
       {messages.length === 0 && !pending ? (
-        <p
+        <div
           className={cn(
-            "flex flex-1 items-center justify-center text-center",
-            "text-balance text-zinc-600 dark:text-zinc-400",
+            "flex flex-1 flex-col items-center justify-center gap-3",
+            "text-center text-balance",
           )}
         >
-          Book a padel court, a football pitch or a coffee shop table. Sarjy
-          plans around the weather.
-        </p>
+          <p>
+            Book a padel court, a football pitch or a coffee shop table in any
+            city. Sarjy checks the weather first.
+          </p>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Tap the mic to talk hands-free, or type. Your browser will ask to
+            use the microphone. Headphones help, so Sarjy doesn't hear itself.
+          </p>
+        </div>
       ) : (
         <ul className="flex flex-1 flex-col gap-2 py-4">
           {messages.map((message) => (

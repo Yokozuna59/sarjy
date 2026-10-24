@@ -40,6 +40,7 @@ export function VoiceButton({ voice }: VoiceButtonProps) {
       variant="outline"
       shape="circle"
       aria-label="Start talking"
+      title="Start talking"
       onClick={() => setOn(true)}
     >
       <Mic className="size-5" />
