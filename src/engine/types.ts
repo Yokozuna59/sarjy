@@ -54,6 +54,8 @@ export interface Booking extends Slot {
   minutes: number;
   groupSize: number;
   name: string;
+  // The first hour's forecast, as Sarjy said it. Null indoors.
+  weather: HourWeather | null;
 }
 
 export interface HourWeather {

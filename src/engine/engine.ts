@@ -113,11 +113,13 @@ export async function step(
     minutes: BOOKING_MINUTES[activity],
     groupSize: group_size,
     name: booking_name,
+    weather: null,
   };
   return decide(fields, draft, ctx);
 }
 
-// The step to repeat after a side question, without checking again.
+// The step to repeat after a side question, without checking again or
+// repeating the weather.
 export function resume(state: FlowState): Action {
   if (state.status === "collecting" && state.pending) {
     return { type: "ask", field: state.pending, failure: null };
@@ -174,15 +176,16 @@ async function confirm(
     venue.setting === "outdoor"
       ? await ctx.getWeather(booking.city, booking.date, booking.hour)
       : null;
+  const draft = { ...booking, weather };
   return {
     state: {
       status: "confirming",
       fields,
       pending: null,
       offers: [],
-      draft: booking,
+      draft,
     },
-    action: { type: "confirm", booking, weather },
+    action: { type: "confirm", booking: draft, weather },
   };
 }
 

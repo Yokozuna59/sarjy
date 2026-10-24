@@ -37,10 +37,18 @@ const slotSchema = z.object({
   hour: z.number().int().min(0).max(23),
 });
 
+const weatherSchema = z.object({
+  apparentTemperature: z.number(),
+  windSpeed: z.number(),
+  rainChance: z.number(),
+});
+
 const bookingSchema = slotSchema.extend({
   minutes: z.number(),
   groupSize: z.number(),
   name: z.string().max(100),
+  // Bookings saved before the card showed the forecast have none.
+  weather: weatherSchema.nullable().default(null),
 });
 
 const flowSchema = z

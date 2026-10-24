@@ -1,5 +1,11 @@
-import type { Booking } from "~/engine/types";
-import { CalendarDays, CircleCheck, MapPin, Users } from "lucide-react";
+import type { Booking, HourWeather } from "~/engine/types";
+import {
+  CalendarDays,
+  CircleCheck,
+  CloudSun,
+  MapPin,
+  Users,
+} from "lucide-react";
 import { VENUES } from "~/engine/venues";
 import { cn } from "~/lib/cn";
 import { clockTime, peopleText, shortDate } from "~/lib/format";
@@ -52,6 +58,12 @@ export function BookingCard({ booking }: BookingCardProps) {
           {shortDate(booking.date)}, {clockTime(start)} to{" "}
           {clockTime(start + booking.minutes)}
         </li>
+        {booking.weather && (
+          <li className="flex items-center gap-2">
+            <CloudSun className="size-4 shrink-0" />
+            {forecastText(booking.weather)}
+          </li>
+        )}
         <li className="flex items-center gap-2">
           <Users className="size-4 shrink-0" />
           {peopleText(booking.groupSize)}, under {booking.name}
@@ -59,4 +71,9 @@ export function BookingCard({ booking }: BookingCardProps) {
       </ul>
     </article>
   );
+}
+
+function forecastText({ apparentTemperature, rainChance }: HourWeather) {
+  const rain = rainChance ? `${rainChance}% rain chance` : "no rain expected";
+  return `Feels like ${apparentTemperature}°C, ${rain}`;
 }
