@@ -9,19 +9,21 @@ The venues are fictional and labelled "Sample venue". Nothing is really booked.
 ## What it does
 
 - **Talk or type.** Tap the mic and talk hands-free. Sarjy detects when you stop, answers out loud sentence by sentence, and stops talking when you start. Headphones work best.
-- **Remembers you.** Tell it your name or your city, and it remembers in later chats. "What's my name?" works after New chat. Forget me clears everything.
+- **Remembers you.** Tell it your name, your city or your favorite color, and it remembers in later chats. The start screen shows what it remembers. "What's my favorite color?" works after New chat. Forget me clears everything.
 - **Books with a real weather check.** It checks feels-like temperature, wind and rain chance for every hour the booking covers, in the city you choose and in that city's local time.
 - **Handles going off-script.** Ask about the weather mid-booking, change your mind, pick an offer, or cancel, and it keeps track.
+- **Shows the booking as it fills in.** A strip above the text box lists each detail, marks the one Sarjy is asking for, and changes when you correct something.
 - **Shows booking cards** after a booking and when you ask "What have I booked?"
 
 ## Try it
 
-1. "Hi, my name is Sara."
+The start screen has examples you can tap. For the full tour:
+1. "Hi, my name is Sara, and my favorite color is green."
 2. "Book a padel court in London tomorrow at 4 PM for 4 people." (Pick a rainy or cold city that day. Sarjy explains why the outdoor slot fails and offers alternatives.)
 3. "Will it rain at those times?" (A side question. Sarjy answers for the offered hours, then says "Back to your booking.")
 4. "Make it Riyadh instead." (A correction. It checks everything again.)
 5. "Yes." Then: "What have I booked?"
-6. Open New chat and ask "What's my name?"
+6. Open New chat and ask "What's my favorite color?"
 
 ## How it works
 
@@ -60,7 +62,7 @@ interface FlowState {
 }
 ```
 
-The state is data, not a conversation. It lives in the browser and goes with every turn, so a reload continues the booking.
+The state is data, not a conversation. It lives in the browser and goes with every turn, so a reload continues the booking. The strip above the text box draws this same state, in the flow spec's field order.
 
 ```mermaid
 stateDiagram-v2
@@ -139,7 +141,7 @@ Dates are `YYYY-MM-DD`, and booking hours are local to the booking's city.
 - **Data lives in the browser instead of PostgreSQL,** to protect time for the flow engine. The Postgres schema is designed, and it would be the first thing to add, along with shared availability across visitors.
 - **English only for now.** The engine already returns actions, not sentences, so Saudi Arabic needs new templates and a voice setting, not engine changes.
 - **Tests:** bring back engine unit tests, add CI, and add a live suite of scripted conversations with a pass rate.
-- **Known gaps:** a half-second pause can split a sentence into two turns. iPhone Safari may block Sarjy's voice until you tap. You can't yet cancel a booking once it's made.
+- **Known gaps:** a half-second pause can split a sentence into two turns. You can't yet cancel a booking once it's made. There's no rate limit yet: the OpenAI balance is prepaid with auto-reload off, which caps what misuse could cost.
 
 ## Run it locally
 
@@ -158,7 +160,8 @@ pnpm dev               # http://localhost:3000
 ```text
 src/
   app/            the page, plus /api/turn and /api/tts
-  components/     chat UI, mic button, booking card
+  components/     chat UI, start screen, mic button, booking card,
+                  booking progress strip
   hooks/          chat state, voice detection, speaker, browser storage
   engine/         the flow engine: types, config, venues, flow spec,
                   rules, alternatives, step, templates
