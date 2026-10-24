@@ -18,6 +18,7 @@ import { BOOKING_MINUTES } from "~/engine/config";
 import { bookVenue } from "~/engine/flows/book-venue";
 import { checkDate, checkSlot } from "~/engine/rules";
 import { findVenue } from "~/engine/venues";
+import { DATE_FORMAT, TIME_FORMAT } from "~/lib/time";
 
 export const IDLE: FlowState = {
   status: "idle",
@@ -240,9 +241,6 @@ function pickVenue(
   if (!venue) throw new Error(`No ${wanted} venue for ${activity}`);
   return venue;
 }
-
-const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_FORMAT = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 // Keeps only the values the user actually gave, in a format we trust.
 function cleanFields(input: BookingInput["fields"]): Fields {

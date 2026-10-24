@@ -3,9 +3,15 @@ import type { Memories } from "~/lib/turn";
 import type { Interpretation } from "~/services/llm";
 import { FORECAST_DAYS } from "~/engine/config";
 import { resume, step } from "~/engine/engine";
-import { bookingsText, hourText, render } from "~/engine/templates";
+import {
+  bookingsText,
+  dayText,
+  hourText,
+  rainText,
+  render,
+} from "~/engine/templates";
 import { VENUES } from "~/engine/venues";
-import { addDays, currentHour, today, weekday } from "~/lib/time";
+import { addDays, currentHour, TIME_FORMAT, today } from "~/lib/time";
 import { geocode, getDayWeather, getHourWeather } from "~/services/weather";
 
 export interface Reply {
@@ -97,7 +103,8 @@ async function answerFor(
     return question.answer ?? "I don't know that yet.";
   }
   if (question?.kind === "weather") {
-    return weatherReply(question.place ?? city, question.date, question.times);
+    const place = question.place ?? city;
+    return weatherReply(place, question.date, question.times, ctx);
   }
   if (question?.kind === "bookings") return bookingsText(ctx.bookings, ctx);
   // The LLM answers small talk only. Anything else gets this.
@@ -113,25 +120,23 @@ async function answerFor(
   return null;
 }
 
-const TIME_FORMAT = /^([01]\d|2[0-3]):\d{2}$/;
-
 async function weatherReply(
   place: string | undefined,
   date: string | null,
   times: string[],
+  ctx: Context,
 ) {
   if (!place) return "Which city? Tell me, and I'll check the weather.";
 
-  const now = today();
-  const day = date ?? now;
-  if (day < now || day >= addDays(now, FORECAST_DAYS)) {
+  const day = date ?? ctx.today;
+  if (day < ctx.today || day >= addDays(ctx.today, FORECAST_DAYS)) {
     return `I can only check the next ${FORECAST_DAYS} days.`;
   }
 
   try {
     const found = await geocode(place);
     if (!found) return `I couldn't find ${place}.`;
-    const label = `${dayLabel(day, now)} in ${found.name}`;
+    const label = `${found.name} ${dayText(day, ctx.today)}`;
 
     // One short sentence per hour asked about, up to three.
     const hours = times
@@ -143,34 +148,21 @@ async function weatherReply(
       for (const hour of hours) {
         const weather = await getHourWeather(found, day, hour);
         if (!weather) continue;
-        const rain = weather.rainChance
-          ? `a rain chance of ${weather.rainChance}%`
-          : "no rain expected";
         lines.push(
           `${label} at ${hourText(hour)}: feels like ` +
-            `${weather.apparentTemperature} degrees, with ${rain}.`,
+            `${weather.apparentTemperature} degrees, with ` +
+            `${rainText(weather.rainChance)}.`,
         );
       }
       return lines.join(" ") || "I couldn't get the forecast for that time.";
     }
 
     const forecast = await getDayWeather(found, day);
-    const rain =
-      forecast.rainChance < 10
-        ? "and no rain expected"
-        : `with a rain chance of ${forecast.rainChance}%`;
     return (
-      `${label}: up to ` +
-      `${Math.round(forecast.high)} degrees, down to ` +
-      `${Math.round(forecast.low)}, ${rain}.`
+      `${label}: up to ${Math.round(forecast.high)} degrees, down to ` +
+      `${Math.round(forecast.low)}, with ${rainText(forecast.rainChance)}.`
     );
   } catch {
     return "I couldn't get the forecast right now. Please try again.";
   }
-}
-
-function dayLabel(day: string, now: string) {
-  if (day === now) return "Today";
-  if (day === addDays(now, 1)) return "Tomorrow";
-  return `On ${weekday(day)}`;
 }

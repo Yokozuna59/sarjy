@@ -7,7 +7,9 @@ export const bookVenue = {
     {
       name: "activity",
       ask: {
-        en: "What would you like to book: a padel court, a football pitch or a coffee shop table?",
+        en:
+          "What would you like to book: a padel court, a football pitch " +
+          "or a coffee shop table?",
       },
     },
     { name: "city", ask: { en: "Which city should I book in?" } },

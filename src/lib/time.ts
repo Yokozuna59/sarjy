@@ -1,5 +1,9 @@
 const TIME_ZONE = "Asia/Riyadh";
 
+// The formats the LLM is asked for: YYYY-MM-DD and 24-hour HH:MM.
+export const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+export const TIME_FORMAT = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 // YYYY-MM-DD in a time zone (Riyadh by default), wherever the server runs.
 export function today(timeZone = TIME_ZONE): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());

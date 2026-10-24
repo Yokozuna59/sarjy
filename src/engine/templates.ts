@@ -9,6 +9,7 @@ import type {
 } from "~/engine/types";
 import { bookVenue } from "~/engine/flows/book-venue";
 import { findVenue } from "~/engine/venues";
+import { peopleText } from "~/lib/format";
 import { addDays, weekday } from "~/lib/time";
 
 type TemplateContext = Pick<Context, "today" | "venues">;
@@ -28,16 +29,18 @@ export function render(action: Action, ctx: TemplateContext): string {
     }
     case "confirm": {
       const { booking, weather } = action;
-      const people = booking.groupSize === 1 ? "person" : "people";
+      const people = peopleText(booking.groupSize);
+      const group = `for ${people}, under ${booking.name}`;
       return sentences(
-        `${where(booking, ctx)}, ${when(booking, ctx)}, for ${booking.groupSize} ${people}, under ${booking.name}.`,
+        `${where(booking, ctx)}, ${when(booking, ctx)}, ${group}.`,
         weather && weatherText(weather),
         "Shall I book it?",
       );
     }
     case "booked": {
       const { booking } = action;
-      return `Done. You're booked at ${where(booking, ctx)} ${when(booking, ctx)}.`;
+      const slot = `${where(booking, ctx)} ${when(booking, ctx)}`;
+      return `Done. You're booked at ${slot}.`;
     }
     case "cancelled":
       return "Okay, I won't book anything.";
@@ -71,21 +74,34 @@ function failureText(failure: Failure | null) {
     case "past":
       return "That's already passed.";
     case "too_far":
-      return "I can only book within the next week, while the forecast is reliable.";
+      return "I can only book a week ahead, while the forecast is reliable.";
     case "not_on_hour":
       return "Bookings start on the hour.";
     case "too_many":
       return `That venue fits up to ${failure.capacity} people.`;
-    case "closed":
-      return `It's open from ${hourText(failure.opensAt)} to ${hourText(failure.closesAt)}, and bookings must end by closing.`;
+    case "closed": {
+      const opens = hourText(failure.opensAt);
+      const closes = hourText(failure.closesAt);
+      return sentences(
+        `It's open from ${opens} to ${closes}.`,
+        "Bookings must end by closing.",
+      );
+    }
     case "taken":
       return "That slot is already booked.";
     case "heat":
-      return `It'll feel like ${Math.round(failure.weather.apparentTemperature)} degrees outside. That's too hot.`;
-    case "cold":
-      return `It'll feel like ${Math.round(failure.weather.apparentTemperature)} degrees outside. That's too cold.`;
-    case "wind":
-      return `The wind will reach ${Math.round(failure.weather.windSpeed)} kilometers an hour. That's too windy.`;
+    case "cold": {
+      const feels = failure.weather.apparentTemperature;
+      const verdict = failure.rule === "heat" ? "too hot" : "too cold";
+      return `It'll feel like ${feels} degrees outside. That's ${verdict}.`;
+    }
+    case "wind": {
+      const wind = failure.weather.windSpeed;
+      return sentences(
+        `The wind will reach ${wind} kilometers an hour.`,
+        "That's too windy.",
+      );
+    }
     case "rain":
       return `The chance of rain is ${failure.weather.rainChance} percent.`;
     case "no_forecast":
@@ -94,11 +110,13 @@ function failureText(failure: Failure | null) {
 }
 
 function weatherText(weather: HourWeather) {
-  const feels = Math.round(weather.apparentTemperature);
-  const rain = weather.rainChance
-    ? `a rain chance of ${weather.rainChance} percent`
-    : "no rain expected";
+  const feels = weather.apparentTemperature;
+  const rain = rainText(weather.rainChance);
   return `It should feel like ${feels} degrees, with ${rain}.`;
+}
+
+export function rainText(chance: number) {
+  return chance ? `a rain chance of ${chance} percent` : "no rain expected";
 }
 
 // Offers are all in the city the user asked for, so it isn't repeated.
@@ -114,7 +132,7 @@ function when(slot: Slot, ctx: TemplateContext) {
   return `${dayText(slot.date, ctx.today)} at ${hourText(slot.hour)}`;
 }
 
-function dayText(date: string, today: string) {
+export function dayText(date: string, today: string) {
   if (date === today) return "today";
   if (date === addDays(today, 1)) return "tomorrow";
   return `on ${weekday(date)}`;
