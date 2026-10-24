@@ -38,8 +38,7 @@ export function useChat({ onReply }: UseChatOptions) {
     [],
   );
   const [sending, setSending] = useState(false);
-  // Speech that ends while a turn is running waits for that turn, so it's
-  // sent with the booking state the turn returns, not the old one.
+  // Speech that ends during a turn waits, so it's sent with the new state.
   const waitingAudio = useRef<Blob[]>([]);
 
   useEffect(() => {

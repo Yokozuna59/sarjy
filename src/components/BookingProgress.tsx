@@ -17,7 +17,6 @@ const ACTIVITIES: Record<Activity, string> = {
   cafe: "Coffee",
 };
 
-// Shown for a field Sarjy doesn't have yet.
 const PLACEHOLDERS: Record<Field, string> = {
   activity: "Activity",
   city: "City",
@@ -83,7 +82,6 @@ export function BookingProgress({ flow }: BookingProgressProps) {
   );
 }
 
-// The field Sarjy is asking for stands out, and missing ones are dashed.
 function chipStyle(filled: boolean, asking: boolean) {
   if (asking) {
     return cn(

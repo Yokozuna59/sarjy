@@ -23,6 +23,7 @@ const historySchema = z
   .array(
     z.object({
       role: z.enum(["user", "assistant"]),
+      // Sarjy's replies, like a list of bookings, can be longer.
       text: z.string().max(MAX_MESSAGE_LENGTH * 2),
     }),
   )

@@ -12,7 +12,6 @@ export interface Reply {
   text: string;
   flow: FlowState;
   bookings: Booking[];
-  // Shown as cards under the reply.
   cards: Booking[];
 }
 
@@ -139,7 +138,7 @@ async function weatherReply(
     if (!found) return `I couldn't find ${place}.`;
     const label = `${dayLabel(day, now)} in ${found.name}`;
 
-    // One short sentence per hour asked about.
+    // One short sentence per hour asked about, up to three.
     const hours = times
       .filter((time) => TIME_FORMAT.test(time))
       .slice(0, 3)

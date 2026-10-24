@@ -18,7 +18,7 @@ export function useStoredState<T>(key: string, initial: T) {
   return [value, setValue] as const;
 }
 
-// Storage can be blocked or full, so failures fall back to memory only.
+// Storage can be blocked or full, so a failed read or write is ignored.
 function read(key: string): unknown {
   try {
     const raw = localStorage.getItem(key);
@@ -32,6 +32,6 @@ function write(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // Keep working in memory.
+    // Not saved, but the chat keeps working.
   }
 }

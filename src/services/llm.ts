@@ -48,7 +48,6 @@ const interpretationSchema = z.object({
 
 export type Interpretation = z.infer<typeof interpretationSchema>;
 
-// In the schema's order: booking, then remember, then question.
 const INTERPRET_PROMPT = `
 You read the last message from a user of Sarjy, a voice assistant that books
 padel courts, football pitches and coffee shop tables. Earlier messages are

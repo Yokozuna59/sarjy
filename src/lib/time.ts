@@ -1,12 +1,10 @@
 const TIME_ZONE = "Asia/Riyadh";
 
-// YYYY-MM-DD in a time zone (Riyadh unless given), whatever time zone the
-// server runs in.
+// YYYY-MM-DD in a time zone (Riyadh by default), wherever the server runs.
 export function today(timeZone = TIME_ZONE): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
 }
 
-// The hour now, from 0 to 23.
 export function currentHour(timeZone = TIME_ZONE): number {
   const hour = new Intl.DateTimeFormat("en-US", {
     timeZone,

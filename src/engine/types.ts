@@ -18,7 +18,9 @@ export interface Venue {
   capacity: number;
 }
 
-// What the user has told us so far. Dates are YYYY-MM-DD, times HH:MM.
+// What the user has told us so far. The keys are snake_case because the
+// LLM writes them and reads them back every turn. Dates are YYYY-MM-DD,
+// times HH:MM.
 export interface Fields {
   activity?: Activity;
   city?: string;
@@ -47,6 +49,7 @@ export interface Slot {
   hour: number;
 }
 
+// A slot someone booked, or the draft waiting for their yes.
 export interface Booking extends Slot {
   minutes: number;
   groupSize: number;
