@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { ChatHeader } from "~/components/ChatHeader";
 import { Composer } from "~/components/Composer";
+import { EmptyState } from "~/components/EmptyState";
 import { MessageList } from "~/components/MessageList";
 import { useChat } from "~/hooks/use-chat";
 import { useSpeaker } from "~/hooks/use-speaker";
@@ -48,7 +49,11 @@ export function ChatView() {
       />
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4">
-          <MessageList messages={messages} pending={sending} />
+          {messages.length === 0 && !sending ? (
+            <EmptyState onExample={sendText} />
+          ) : (
+            <MessageList messages={messages} pending={sending} />
+          )}
           <div className="sticky bottom-0 bg-background pb-4">
             <Composer
               disabled={sending}
