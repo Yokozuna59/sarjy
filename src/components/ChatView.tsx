@@ -4,16 +4,24 @@ import { useEffect, useRef } from "react";
 import { BookingProgress } from "~/components/BookingProgress";
 import { ChatHeader } from "~/components/ChatHeader";
 import { Composer } from "~/components/Composer";
-import { EmptyState } from "~/components/EmptyState";
 import { MessageList } from "~/components/MessageList";
+import { StartScreen } from "~/components/StartScreen";
 import { useChat } from "~/hooks/use-chat";
 import { useSpeaker } from "~/hooks/use-speaker";
 import { cn } from "~/lib/cn";
 
 export function ChatView() {
   const speaker = useSpeaker();
-  const { messages, memories, flow, sending, send, sendAudio, clear, forget } =
-    useChat({ onReply: speaker.speak });
+  const {
+    messages,
+    memories,
+    flow,
+    sending,
+    send,
+    sendAudio,
+    newChat,
+    forget,
+  } = useChat({ onReply: speaker.speak });
   const hasData = messages.length > 0 || Object.keys(memories).length > 0;
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -26,7 +34,7 @@ export function ChatView() {
 
   function startNewChat() {
     speaker.stop();
-    clear();
+    newChat();
   }
 
   function forgetMe() {
@@ -51,9 +59,9 @@ export function ChatView() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4">
           {messages.length === 0 && !sending ? (
-            <EmptyState memories={memories} onExample={sendText} />
+            <StartScreen memories={memories} onExample={sendText} />
           ) : (
-            <MessageList messages={messages} pending={sending} />
+            <MessageList messages={messages} sending={sending} />
           )}
           <div className="sticky bottom-0 bg-background pb-4">
             <BookingProgress flow={flow} />

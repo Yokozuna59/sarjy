@@ -118,7 +118,7 @@ export function useChat({ onReply }: UseChatOptions) {
   }
 
   // A booking in progress belongs to its chat. Finished bookings stay.
-  function clear() {
+  function newChat() {
     waitingAudio.current = [];
     setMessages([]);
     setFlow(IDLE);
@@ -139,7 +139,7 @@ export function useChat({ onReply }: UseChatOptions) {
     sending,
     send,
     sendAudio,
-    clear,
+    newChat,
     forget,
   };
 }

@@ -1,3 +1,4 @@
+import type { Booking } from "~/engine/types";
 import type { ChatMessage } from "~/hooks/use-chat";
 import { BookingCard } from "~/components/BookingCard";
 import { cn } from "~/lib/cn";
@@ -32,11 +33,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         {message.text}
       </div>
       {message.cards?.map((booking) => (
-        <BookingCard
-          key={`${booking.venueId}-${booking.city}-${booking.date}-${booking.hour}`}
-          booking={booking}
-        />
+        <BookingCard key={bookingKey(booking)} booking={booking} />
       ))}
     </li>
   );
+}
+
+function bookingKey({ venueId, city, date, hour }: Booking) {
+  return `${venueId}-${city}-${date}-${hour}`;
 }

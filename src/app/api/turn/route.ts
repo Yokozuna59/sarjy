@@ -115,7 +115,7 @@ export async function POST(request: Request) {
       input.history,
       input.flow,
     );
-    const facts = interpretation.remember.map((f) => [f.key, f.value]);
+    const facts = interpretation.remember.map((fact) => [fact.key, fact.value]);
     const memories = { ...input.memories, ...Object.fromEntries(facts) };
     const reply = await replyFor(
       interpretation,

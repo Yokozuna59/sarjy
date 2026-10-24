@@ -7,12 +7,12 @@ const EXAMPLES = [
   "What's the weather in Riyadh tomorrow?",
 ];
 
-interface EmptyStateProps {
+interface StartScreenProps {
   memories: Memories;
   onExample: (text: string) => void;
 }
 
-export function EmptyState({ memories, onExample }: EmptyStateProps) {
+export function StartScreen({ memories, onExample }: StartScreenProps) {
   // Once Sarjy knows a favorite color, the example asks for it back.
   const colorExample = memories.favorite_color
     ? "What's my favorite color?"
