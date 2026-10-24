@@ -50,7 +50,7 @@ export function ChatView() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4">
           {messages.length === 0 && !sending ? (
-            <EmptyState onExample={sendText} />
+            <EmptyState memories={memories} onExample={sendText} />
           ) : (
             <MessageList messages={messages} pending={sending} />
           )}
