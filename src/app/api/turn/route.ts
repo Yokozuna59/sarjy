@@ -122,6 +122,7 @@ export async function POST(request: Request) {
       memories,
       flow: reply.flow,
       bookings: reply.bookings,
+      cards: reply.cards,
     };
     return Response.json(response);
   } catch (error) {

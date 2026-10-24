@@ -12,6 +12,8 @@ export interface Reply {
   text: string;
   flow: FlowState;
   bookings: Booking[];
+  // Shown as cards under the reply.
+  cards: Booking[];
 }
 
 const INTRO =
@@ -28,23 +30,33 @@ export async function replyFor(
 ): Promise<Reply> {
   const ctx = bookingContext(memories, bookings);
   const { state, action } = await step(flow, interpretation.booking, ctx);
+  if (action.type === "booked") {
+    return {
+      text: render(action, ctx),
+      flow: state,
+      bookings: [...bookings, action.booking],
+      cards: [action.booking],
+    };
+  }
   if (action.type !== "none") {
-    const saved =
-      action.type === "booked" ? [...bookings, action.booking] : bookings;
-    return { text: render(action, ctx), flow: state, bookings: saved };
+    return { text: render(action, ctx), flow: state, bookings, cards: [] };
   }
 
   // A weather question mid-booking is usually about the booking's city.
   const city = state.fields.city ?? memories.city;
   const answer = await answerFor(interpretation, city, ctx);
+  const cards =
+    interpretation.question?.kind === "bookings"
+      ? bookings.filter((booking) => booking.date >= ctx.today)
+      : [];
   if (state.status === "idle") {
     const general = interpretation.question?.kind === "general";
     const text = general ? `${answer} ${INTRO}` : (answer ?? INTRO);
-    return { text, flow: state, bookings };
+    return { text, flow: state, bookings, cards };
   }
   const back = render(resume(state), ctx);
   const text = answer ? `${answer} Back to your booking. ${back}` : back;
-  return { text, flow: state, bookings };
+  return { text, flow: state, bookings, cards };
 }
 
 function bookingContext(memories: Memories, bookings: Booking[]): Context {

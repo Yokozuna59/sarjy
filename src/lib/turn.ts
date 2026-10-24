@@ -21,6 +21,7 @@ export interface TurnResponse {
   memories: Memories;
   flow: FlowState;
   bookings: Booking[];
+  cards: Booking[];
 }
 
 export interface TurnError {

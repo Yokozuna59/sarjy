@@ -14,6 +14,7 @@ export interface ChatMessage {
   id: number;
   role: "user" | "assistant";
   text: string;
+  cards?: Booking[];
 }
 
 interface UseChatOptions {
@@ -47,8 +48,15 @@ export function useChat({ onReply }: UseChatOptions) {
     if (wav) sendAudio(wav);
   });
 
-  function addMessage(role: ChatMessage["role"], text: string) {
-    setMessages((current) => [...current, { id: current.length, role, text }]);
+  function addMessage(
+    role: ChatMessage["role"],
+    text: string,
+    cards?: Booking[],
+  ) {
+    setMessages((current) => [
+      ...current,
+      { id: current.length, role, text, cards },
+    ]);
   }
 
   function recentHistory(): HistoryMessage[] {
@@ -81,8 +89,8 @@ export function useChat({ onReply }: UseChatOptions) {
 
   async function postTurn(body: string | FormData) {
     const isAudio = body instanceof FormData;
-    const reply = (text: string, sentences = [text]) => {
-      addMessage("assistant", text);
+    const reply = (text: string, sentences = [text], cards?: Booking[]) => {
+      addMessage("assistant", text, cards);
       onReply(sentences);
     };
 
@@ -102,7 +110,7 @@ export function useChat({ onReply }: UseChatOptions) {
       setMemories(data.memories);
       setFlow(data.flow);
       setBookings(data.bookings);
-      reply(data.reply.text, data.reply.sentences);
+      reply(data.reply.text, data.reply.sentences, data.cards);
     } catch {
       reply(FALLBACK_ERROR);
     } finally {
