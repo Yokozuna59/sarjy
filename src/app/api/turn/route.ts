@@ -64,15 +64,21 @@ const flowSchema = z
 
 const bookingsSchema = z.array(bookingSchema).max(100).default([]);
 
-const textSchema = z.object({
-  text: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
+// What the browser keeps and sends with every turn.
+const storedSchema = z.object({
   memories: memoriesSchema,
   history: historySchema,
   flow: flowSchema,
   bookings: bookingsSchema,
 });
 
-const audioSchema = z.file().min(1).max(MAX_AUDIO_BYTES).mime("audio/wav");
+const textSchema = storedSchema.extend({
+  text: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
+});
+
+const audioSchema = storedSchema.extend({
+  audio: z.file().min(1).max(MAX_AUDIO_BYTES).mime("audio/wav"),
+});
 
 const errors = {
   text: `Send { "text" } with 1 to ${MAX_MESSAGE_LENGTH} characters.`,
@@ -137,29 +143,19 @@ async function readText(request: Request): Promise<TurnInput | null> {
   return body.success ? body.data : null;
 }
 
+// Next to the WAV file, the stored state comes as JSON strings.
 async function readAudio(request: Request): Promise<TurnInput | null> {
   const form = await request.formData().catch(() => null);
-  const audio = audioSchema.safeParse(form?.get("audio"));
-  const memories = memoriesSchema.safeParse(parseJson(form?.get("memories")));
-  const history = historySchema.safeParse(parseJson(form?.get("history")));
-  const flow = flowSchema.safeParse(parseJson(form?.get("flow")));
-  const bookings = bookingsSchema.safeParse(parseJson(form?.get("bookings")));
-  if (
-    !audio.success ||
-    !memories.success ||
-    !history.success ||
-    !flow.success ||
-    !bookings.success
-  ) {
-    return null;
-  }
-  return {
-    text: await transcribe(audio.data),
-    memories: memories.data,
-    history: history.data,
-    flow: flow.data,
-    bookings: bookings.data,
-  };
+  const body = audioSchema.safeParse({
+    audio: form?.get("audio"),
+    memories: parseJson(form?.get("memories")),
+    history: parseJson(form?.get("history")),
+    flow: parseJson(form?.get("flow")),
+    bookings: parseJson(form?.get("bookings")),
+  });
+  if (!body.success) return null;
+  const { audio, ...stored } = body.data;
+  return { ...stored, text: await transcribe(audio) };
 }
 
 function parseJson(value: FormDataEntryValue | null | undefined) {
