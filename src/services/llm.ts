@@ -7,7 +7,7 @@ import { settingOf, VENUES } from "~/engine/venues";
 import { today, weekday } from "~/lib/time";
 import { getClient, models } from "~/services/openai";
 
-export interface LlmMessage {
+interface LlmMessage {
   role: "system" | "user" | "assistant";
   content: string;
 }
@@ -131,7 +131,7 @@ function describeFlow({ status, fields, pending, offers }: FlowState) {
   return lines.join("\n");
 }
 
-export async function completeJson<Schema extends z.ZodType>(
+async function completeJson<Schema extends z.ZodType>(
   schema: Schema,
   name: string,
   messages: LlmMessage[],
@@ -151,17 +151,4 @@ export async function completeJson<Schema extends z.ZodType>(
     throw new Error("The LLM returned no structured output.");
   }
   return parsed;
-}
-
-export async function completeText(messages: LlmMessage[]): Promise<string> {
-  const completion = await getClient().chat.completions.create({
-    model: models.llm,
-    messages,
-    reasoning_effort: "none",
-  });
-  const text = completion.choices[0]?.message.content?.trim();
-  if (!text) {
-    throw new Error("The LLM returned an empty reply.");
-  }
-  return text;
 }
