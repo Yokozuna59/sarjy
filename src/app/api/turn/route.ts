@@ -1,8 +1,12 @@
-import type { Memories, TurnResponse } from "~/lib/turn";
-import type { Interpretation } from "~/services/llm";
+import type { HistoryMessage, Memories, TurnResponse } from "~/lib/turn";
 import * as z from "zod";
+import { replyFor } from "~/lib/reply";
 import { splitSentences } from "~/lib/sentences";
-import { MAX_AUDIO_BYTES, MAX_MESSAGE_LENGTH } from "~/lib/turn";
+import {
+  HISTORY_LENGTH,
+  MAX_AUDIO_BYTES,
+  MAX_MESSAGE_LENGTH,
+} from "~/lib/turn";
 import { interpret } from "~/services/llm";
 import { friendlyError } from "~/services/openai";
 import { transcribe } from "~/services/stt";
@@ -11,9 +15,20 @@ export const maxDuration = 60;
 
 const memoriesSchema = z.record(z.string(), z.string().max(200)).default({});
 
+const historySchema = z
+  .array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      text: z.string().max(MAX_MESSAGE_LENGTH * 2),
+    }),
+  )
+  .max(HISTORY_LENGTH)
+  .default([]);
+
 const textSchema = z.object({
   text: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
   memories: memoriesSchema,
+  history: historySchema,
 });
 
 const audioSchema = z.file().min(1).max(MAX_AUDIO_BYTES).mime("audio/wav");
@@ -27,6 +42,7 @@ const errors = {
 interface TurnInput {
   text: string;
   memories: Memories;
+  history: HistoryMessage[];
 }
 
 export async function POST(request: Request) {
@@ -43,9 +59,13 @@ export async function POST(request: Request) {
       return Response.json({ error: errors.silence }, { status: 422 });
     }
 
-    const interpretation = await interpret(input.text, input.memories);
+    const interpretation = await interpret(
+      input.text,
+      input.memories,
+      input.history,
+    );
     const facts = interpretation.remember.map((f) => [f.key, f.value]);
-    const text = replyFor(interpretation);
+    const text = await replyFor(interpretation, input.memories);
     const response: TurnResponse = {
       userText: input.text,
       reply: { text, sentences: splitSentences(text) },
@@ -59,22 +79,6 @@ export async function POST(request: Request) {
   }
 }
 
-// Templates decide the reply until the flow engine does (step 6).
-function replyFor({ question, remember }: Interpretation) {
-  if (question?.kind === "memory") {
-    return question.answer ?? "I don't know that yet.";
-  }
-  if (question) return "I can't check that yet.";
-
-  const name = remember.find((fact) => fact.key === "name")?.value;
-  if (name) return `Nice to meet you, ${name}. I'll remember that.`;
-  if (remember.length > 0) return "Got it. I'll remember that.";
-  return (
-    "Booking is coming soon. " +
-    "For now, tell me about yourself and I'll remember it."
-  );
-}
-
 async function readText(request: Request): Promise<TurnInput | null> {
   const body = textSchema.safeParse(await request.json().catch(() => null));
   return body.success ? body.data : null;
@@ -84,8 +88,13 @@ async function readAudio(request: Request): Promise<TurnInput | null> {
   const form = await request.formData().catch(() => null);
   const audio = audioSchema.safeParse(form?.get("audio"));
   const memories = memoriesSchema.safeParse(parseJson(form?.get("memories")));
-  if (!audio.success || !memories.success) return null;
-  return { text: await transcribe(audio.data), memories: memories.data };
+  const history = historySchema.safeParse(parseJson(form?.get("history")));
+  if (!audio.success || !memories.success || !history.success) return null;
+  return {
+    text: await transcribe(audio.data),
+    memories: memories.data,
+    history: history.data,
+  };
 }
 
 function parseJson(value: FormDataEntryValue | null | undefined) {

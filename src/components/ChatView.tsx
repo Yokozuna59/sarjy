@@ -6,6 +6,7 @@ import { Composer } from "~/components/Composer";
 import { MessageList } from "~/components/MessageList";
 import { useChat } from "~/hooks/use-chat";
 import { useSpeaker } from "~/hooks/use-speaker";
+import { cn } from "~/lib/cn";
 
 export function ChatView() {
   const speaker = useSpeaker();
@@ -54,6 +55,20 @@ export function ChatView() {
               onSend={sendText}
               voice={{ onSpeech: sendAudio, onSpeechStart: speaker.stop }}
             />
+            <p className="pt-2 text-center text-xs text-zinc-500">
+              Weather data by{" "}
+              <a
+                href="https://open-meteo.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "underline hover:text-zinc-700",
+                  "dark:hover:text-zinc-300",
+                )}
+              >
+                Open-Meteo.com
+              </a>
+            </p>
           </div>
         </div>
       </div>

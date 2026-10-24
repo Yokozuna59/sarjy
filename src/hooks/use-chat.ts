@@ -1,6 +1,12 @@
-import type { Memories, TurnError, TurnResponse } from "~/lib/turn";
+import type {
+  HistoryMessage,
+  Memories,
+  TurnError,
+  TurnResponse,
+} from "~/lib/turn";
 import { useState } from "react";
 import { useStoredState } from "~/hooks/use-stored-state";
+import { HISTORY_LENGTH } from "~/lib/turn";
 
 export interface ChatMessage {
   id: number;
@@ -29,15 +35,23 @@ export function useChat({ onReply }: UseChatOptions) {
     setMessages((current) => [...current, { id: current.length, role, text }]);
   }
 
+  function recentHistory(): HistoryMessage[] {
+    return messages
+      .slice(-HISTORY_LENGTH)
+      .map(({ role, text }) => ({ role, text }));
+  }
+
   function send(text: string) {
+    const history = recentHistory();
     addMessage("user", text);
-    return postTurn(JSON.stringify({ text, memories }));
+    return postTurn(JSON.stringify({ text, memories, history }));
   }
 
   function sendAudio(wav: Blob) {
     const form = new FormData();
     form.append("audio", wav, "speech.wav");
     form.append("memories", JSON.stringify(memories));
+    form.append("history", JSON.stringify(recentHistory()));
     return postTurn(form);
   }
 
