@@ -4,7 +4,7 @@ import type { ChangeEvent, KeyboardEvent, SubmitEvent } from "react";
 import type { VoiceHandlers } from "~/hooks/use-voice";
 import { ArrowUp } from "lucide-react";
 import { useRef, useState } from "react";
-import { IconButton } from "~/components/IconButton";
+import { Button } from "~/components/Button";
 import { VoiceButton } from "~/components/VoiceButton";
 import { cn } from "~/lib/cn";
 import { MAX_MESSAGE_LENGTH } from "~/lib/turn";
@@ -72,14 +72,15 @@ export function Composer({ disabled, onSend, voice }: ComposerProps) {
         )}
       />
       <VoiceButton voice={voice} />
-      <IconButton
+      <Button
         type="submit"
         variant="primary"
-        label="Send"
+        shape="circle"
+        aria-label="Send"
         disabled={disabled || !text.trim()}
       >
         <ArrowUp className="size-5" />
-      </IconButton>
+      </Button>
     </form>
   );
 }

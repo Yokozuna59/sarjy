@@ -4,7 +4,7 @@ import type { VoiceHandlers } from "~/hooks/use-voice";
 import { LoaderCircle, Mic } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { IconButton } from "~/components/IconButton";
+import { Button } from "~/components/Button";
 
 // Loaded on the first click, so typing-only visitors skip the voice model.
 const ListeningButton = dynamic(
@@ -12,9 +12,14 @@ const ListeningButton = dynamic(
   {
     ssr: false,
     loading: () => (
-      <IconButton variant="outline" label="Starting the microphone" disabled>
+      <Button
+        variant="outline"
+        shape="circle"
+        aria-label="Starting the microphone"
+        disabled
+      >
         <LoaderCircle className="size-5 animate-spin" />
-      </IconButton>
+      </Button>
     ),
   },
 );
@@ -31,12 +36,13 @@ export function VoiceButton({ voice }: VoiceButtonProps) {
   }
 
   return (
-    <IconButton
+    <Button
       variant="outline"
-      label="Start talking"
+      shape="circle"
+      aria-label="Start talking"
       onClick={() => setOn(true)}
     >
       <Mic className="size-5" />
-    </IconButton>
+    </Button>
   );
 }

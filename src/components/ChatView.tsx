@@ -9,9 +9,9 @@ import { useSpeaker } from "~/hooks/use-speaker";
 
 export function ChatView() {
   const speaker = useSpeaker();
-  const { messages, sending, send, sendAudio, clear } = useChat({
-    onReply: speaker.speak,
-  });
+  const { messages, memories, sending, send, sendAudio, clear, forget } =
+    useChat({ onReply: speaker.speak });
+  const hasData = messages.length > 0 || Object.keys(memories).length > 0;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,6 +26,12 @@ export function ChatView() {
     clear();
   }
 
+  function forgetMe() {
+    if (!window.confirm("Forget everything Sarjy knows about you?")) return;
+    speaker.stop();
+    forget();
+  }
+
   function sendText(text: string) {
     speaker.stop();
     send(text);
@@ -35,7 +41,9 @@ export function ChatView() {
     <>
       <ChatHeader
         canStartNew={messages.length > 0 && !sending}
+        canForget={hasData && !sending}
         onNewChat={startNewChat}
+        onForget={forgetMe}
       />
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4">

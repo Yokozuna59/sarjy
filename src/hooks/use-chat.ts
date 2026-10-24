@@ -1,4 +1,4 @@
-import type { TurnError, TurnResponse } from "~/lib/turn";
+import type { Memories, TurnError, TurnResponse } from "~/lib/turn";
 import { useState } from "react";
 import { useStoredState } from "~/hooks/use-stored-state";
 
@@ -19,6 +19,10 @@ export function useChat({ onReply }: UseChatOptions) {
     "sarjy:messages",
     [],
   );
+  const [memories, setMemories] = useStoredState<Memories>(
+    "sarjy:memories",
+    {},
+  );
   const [sending, setSending] = useState(false);
 
   function addMessage(role: ChatMessage["role"], text: string) {
@@ -27,12 +31,13 @@ export function useChat({ onReply }: UseChatOptions) {
 
   function send(text: string) {
     addMessage("user", text);
-    return postTurn(JSON.stringify({ text }));
+    return postTurn(JSON.stringify({ text, memories }));
   }
 
   function sendAudio(wav: Blob) {
     const form = new FormData();
     form.append("audio", wav, "speech.wav");
+    form.append("memories", JSON.stringify(memories));
     return postTurn(form);
   }
 
@@ -56,6 +61,7 @@ export function useChat({ onReply }: UseChatOptions) {
         return;
       }
       if (isAudio) addMessage("user", data.userText);
+      setMemories(data.memories);
       reply(data.reply.text, data.reply.sentences);
     } catch {
       reply(FALLBACK_ERROR);
@@ -68,5 +74,10 @@ export function useChat({ onReply }: UseChatOptions) {
     setMessages([]);
   }
 
-  return { messages, sending, send, sendAudio, clear };
+  function forget() {
+    setMessages([]);
+    setMemories({});
+  }
+
+  return { messages, memories, sending, send, sendAudio, clear, forget };
 }

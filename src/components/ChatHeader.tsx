@@ -1,12 +1,20 @@
 import { Plus } from "lucide-react";
+import { Button } from "~/components/Button";
 import { cn } from "~/lib/cn";
 
 interface ChatHeaderProps {
   canStartNew: boolean;
+  canForget: boolean;
   onNewChat: () => void;
+  onForget: () => void;
 }
 
-export function ChatHeader({ canStartNew, onNewChat }: ChatHeaderProps) {
+export function ChatHeader({
+  canStartNew,
+  canForget,
+  onNewChat,
+  onForget,
+}: ChatHeaderProps) {
   return (
     <header
       className={cn(
@@ -15,20 +23,25 @@ export function ChatHeader({ canStartNew, onNewChat }: ChatHeaderProps) {
       )}
     >
       <h1 className="text-lg font-semibold tracking-tight">Sarjy</h1>
-      <button
-        type="button"
-        onClick={onNewChat}
-        disabled={!canStartNew}
-        className={cn(
-          "flex items-center gap-1.5 rounded-full border px-3 py-1.5",
-          "text-sm font-medium border-zinc-300 dark:border-zinc-700",
-          "enabled:cursor-pointer enabled:hover:bg-zinc-100",
-          "dark:enabled:hover:bg-zinc-800 disabled:opacity-40",
-        )}
-      >
-        <Plus className="size-4" />
-        New chat
-      </button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="danger"
+          shape="pill"
+          onClick={onForget}
+          disabled={!canForget}
+        >
+          Forget me
+        </Button>
+        <Button
+          variant="outline"
+          shape="pill"
+          onClick={onNewChat}
+          disabled={!canStartNew}
+        >
+          <Plus className="size-4" />
+          New chat
+        </Button>
+      </div>
     </header>
   );
 }
