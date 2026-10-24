@@ -8,7 +8,7 @@ export interface Place {
   timezone: string;
 }
 
-export interface DayForecast {
+export interface DayWeather {
   high: number;
   low: number;
   rainChance: number;
@@ -58,10 +58,10 @@ export async function geocode(name: string): Promise<Place | null> {
   return results.find((place) => place.population) ?? null;
 }
 
-export async function getDayForecast(
+export async function getDayWeather(
   place: Place,
   date: string,
-): Promise<DayForecast> {
+): Promise<DayWeather> {
   const params = new URLSearchParams({
     latitude: String(place.latitude),
     longitude: String(place.longitude),
@@ -85,14 +85,13 @@ export async function getDayForecast(
 // The day comes back in the place's local time, one value per hour, so
 // the hour is the index. Every hour of a day shares one cached request.
 export async function getHourWeather(
-  latitude: number,
-  longitude: number,
+  place: Place,
   date: string,
   hour: number,
 ): Promise<HourWeather | null> {
   const params = new URLSearchParams({
-    latitude: String(latitude),
-    longitude: String(longitude),
+    latitude: String(place.latitude),
+    longitude: String(place.longitude),
     hourly: "apparent_temperature,wind_speed_10m,precipitation_probability",
     timezone: "auto",
     start_date: date,

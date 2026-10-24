@@ -59,10 +59,10 @@ function weatherFailure(weather: HourWeather): Failure | null {
   if (weather.apparentTemperature < WEATHER_LIMITS.minApparentTemperature) {
     return { rule: "cold", weather };
   }
-  if (weather.windSpeed > WEATHER_LIMITS.windSpeed) {
+  if (weather.windSpeed > WEATHER_LIMITS.maxWindSpeed) {
     return { rule: "wind", weather };
   }
-  if (weather.rainChance > WEATHER_LIMITS.rainChance) {
+  if (weather.rainChance > WEATHER_LIMITS.maxRainChance) {
     return { rule: "rain", weather };
   }
   return null;

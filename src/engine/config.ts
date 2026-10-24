@@ -13,8 +13,8 @@ export const BOOKING_MINUTES: Record<Activity, number> = {
 export const WEATHER_LIMITS = {
   maxApparentTemperature: 35,
   minApparentTemperature: 5,
-  windSpeed: 30,
-  rainChance: 40,
+  maxWindSpeed: 30,
+  maxRainChance: 40,
 };
 
 export const MAX_OFFERS = 2;

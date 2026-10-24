@@ -6,7 +6,7 @@ import { resume, step } from "~/engine/engine";
 import { bookingsText, hourText, render } from "~/engine/templates";
 import { VENUES } from "~/engine/venues";
 import { addDays, currentHour, today, weekday } from "~/lib/time";
-import { geocode, getDayForecast, getHourWeather } from "~/services/weather";
+import { geocode, getDayWeather, getHourWeather } from "~/services/weather";
 
 export interface Reply {
   text: string;
@@ -80,12 +80,7 @@ function bookingContext(memories: Memories, bookings: Booking[]): Context {
       try {
         const place = await geocode(city);
         if (!place) return null;
-        return await getHourWeather(
-          place.latitude,
-          place.longitude,
-          date,
-          hour,
-        );
+        return await getHourWeather(place, date, hour);
       } catch {
         return null;
       }
@@ -146,12 +141,7 @@ async function weatherReply(
     if (hours.length > 0) {
       const lines: string[] = [];
       for (const hour of hours) {
-        const weather = await getHourWeather(
-          found.latitude,
-          found.longitude,
-          day,
-          hour,
-        );
+        const weather = await getHourWeather(found, day, hour);
         if (!weather) continue;
         const rain = weather.rainChance
           ? `a rain chance of ${weather.rainChance}%`
@@ -164,7 +154,7 @@ async function weatherReply(
       return lines.join(" ") || "I couldn't get the forecast for that time.";
     }
 
-    const forecast = await getDayForecast(found, day);
+    const forecast = await getDayWeather(found, day);
     const rain =
       forecast.rainChance < 10
         ? "and no rain expected"
