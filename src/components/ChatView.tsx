@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { BookingProgress } from "~/components/BookingProgress";
 import { ChatHeader } from "~/components/ChatHeader";
 import { Composer } from "~/components/Composer";
 import { EmptyState } from "~/components/EmptyState";
@@ -11,7 +12,7 @@ import { cn } from "~/lib/cn";
 
 export function ChatView() {
   const speaker = useSpeaker();
-  const { messages, memories, sending, send, sendAudio, clear, forget } =
+  const { messages, memories, flow, sending, send, sendAudio, clear, forget } =
     useChat({ onReply: speaker.speak });
   const hasData = messages.length > 0 || Object.keys(memories).length > 0;
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,7 @@ export function ChatView() {
             <MessageList messages={messages} pending={sending} />
           )}
           <div className="sticky bottom-0 bg-background pb-4">
+            <BookingProgress flow={flow} />
             <Composer
               disabled={sending}
               onSend={sendText}

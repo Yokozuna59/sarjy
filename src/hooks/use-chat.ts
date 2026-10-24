@@ -133,5 +133,14 @@ export function useChat({ onReply }: UseChatOptions) {
     setBookings([]);
   }
 
-  return { messages, memories, sending, send, sendAudio, clear, forget };
+  return {
+    messages,
+    memories,
+    flow,
+    sending,
+    send,
+    sendAudio,
+    clear,
+    forget,
+  };
 }
