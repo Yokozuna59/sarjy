@@ -2,8 +2,7 @@ import type { FlowState } from "~/engine/types";
 import type { HistoryMessage, Memories } from "~/lib/turn";
 import { zodResponseFormat } from "openai/helpers/zod";
 import * as z from "zod";
-import { findVenue } from "~/engine/rules";
-import { settingOf, VENUES } from "~/engine/venues";
+import { findVenue, settingOf, VENUES } from "~/engine/venues";
 import { today, weekday } from "~/lib/time";
 import { getClient, models } from "~/services/openai";
 
@@ -120,7 +119,7 @@ function describeFlow({ status, fields, pending, offers }: FlowState) {
   const lines = [`Booking so far: ${JSON.stringify(fields)}`];
   if (pending) lines.push(`Sarjy asked for: ${pending}`);
   for (const [index, offer] of offers.entries()) {
-    const venue = findVenue(offer.venueId, { venues: VENUES });
+    const venue = findVenue(offer.venueId, VENUES);
     const time = `${String(offer.hour).padStart(2, "0")}:00`;
     lines.push(
       `Offer ${index}: ${venue.name} (${settingOf(venue)}), ` +

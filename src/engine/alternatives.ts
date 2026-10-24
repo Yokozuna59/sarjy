@@ -1,7 +1,7 @@
 import type { Context, Setting, Slot } from "~/engine/types";
 import { MAX_OFFERS } from "~/engine/config";
-import { checkSlot, findVenue } from "~/engine/rules";
-import { settingOf } from "~/engine/venues";
+import { checkSlot } from "~/engine/rules";
+import { findVenue, settingOf } from "~/engine/venues";
 import { addDays } from "~/lib/time";
 
 // Slots near the request that pass every rule: every open hour that day
@@ -14,7 +14,7 @@ export async function findOffers(
   setting: Setting | undefined,
   ctx: Context,
 ): Promise<Slot[]> {
-  const requested = findVenue(request.venueId, ctx);
+  const requested = findVenue(request.venueId, ctx.venues);
   const venues = [
     requested,
     ...ctx.venues.filter(
@@ -46,7 +46,7 @@ export async function findOffers(
   const [closest] = passing;
   if (!closest) return [];
   const outdoor = passing.find(
-    (slot) => slot !== closest && findVenue(slot.venueId, ctx).outdoor,
+    (slot) => slot !== closest && findVenue(slot.venueId, ctx.venues).outdoor,
   );
   const rest = passing.filter((slot) => slot !== closest && slot !== outdoor);
   return [closest, ...(outdoor ? [outdoor] : []), ...rest].slice(0, MAX_OFFERS);

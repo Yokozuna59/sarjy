@@ -16,8 +16,8 @@ import type {
 import { findOffers } from "~/engine/alternatives";
 import { BOOKING_MINUTES } from "~/engine/config";
 import { bookVenue } from "~/engine/flows/book-venue";
-import { checkDate, checkSlot, findVenue } from "~/engine/rules";
-import { settingOf } from "~/engine/venues";
+import { checkDate, checkSlot } from "~/engine/rules";
+import { findVenue, settingOf } from "~/engine/venues";
 
 export const IDLE: FlowState = {
   status: "idle",
@@ -102,7 +102,7 @@ export async function step(
   }
 
   const venue = venueId
-    ? findVenue(venueId, ctx)
+    ? findVenue(venueId, ctx.venues)
     : pickVenue(activity, fields.setting, ctx);
   const draft: Booking = {
     venueId: venue.id,
@@ -168,7 +168,7 @@ async function confirm(
   booking: Booking,
   ctx: Context,
 ): Promise<StepResult> {
-  const venue = findVenue(booking.venueId, ctx);
+  const venue = findVenue(booking.venueId, ctx.venues);
   const weather = venue.outdoor
     ? await ctx.getWeather(booking.city, booking.date, booking.hour)
     : null;

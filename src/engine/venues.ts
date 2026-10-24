@@ -4,6 +4,13 @@ export function settingOf(venue: Venue): Setting {
   return venue.outdoor ? "outdoor" : "indoor";
 }
 
+// The engine gets its venues through ctx, so the list is passed in.
+export function findVenue(venueId: string, venues: Venue[]): Venue {
+  const venue = venues.find((each) => each.id === venueId);
+  if (!venue) throw new Error(`Unknown venue: ${venueId}`);
+  return venue;
+}
+
 // Fictional sample venues, shown as "Sample venue" in the UI. Every city
 // has the same six, so the city's weather is what changes the booking.
 export const VENUES: Venue[] = [

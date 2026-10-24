@@ -1,25 +1,11 @@
-import type {
-  Context,
-  Failure,
-  HourWeather,
-  Slot,
-  Venue,
-} from "~/engine/types";
+import type { Context, Failure, HourWeather, Slot } from "~/engine/types";
 import {
   BOOKING_MINUTES,
   FORECAST_DAYS,
   WEATHER_LIMITS,
 } from "~/engine/config";
+import { findVenue } from "~/engine/venues";
 import { addDays } from "~/lib/time";
-
-export function findVenue(
-  venueId: string,
-  ctx: Pick<Context, "venues">,
-): Venue {
-  const venue = ctx.venues.find((v) => v.id === venueId);
-  if (!venue) throw new Error(`Unknown venue: ${venueId}`);
-  return venue;
-}
 
 export function checkDate(date: string, ctx: Context): Failure | null {
   if (date < ctx.today) return { rule: "past" };
@@ -34,7 +20,7 @@ export async function checkSlot(
   groupSize: number,
   ctx: Context,
 ): Promise<Failure | null> {
-  const venue = findVenue(slot.venueId, ctx);
+  const venue = findVenue(slot.venueId, ctx.venues);
   const minutes = BOOKING_MINUTES[venue.activity];
   const start = slot.hour * 60;
 

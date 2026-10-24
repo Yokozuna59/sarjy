@@ -8,7 +8,7 @@ import type {
   Slot,
 } from "~/engine/types";
 import { bookVenue } from "~/engine/flows/book-venue";
-import { findVenue } from "~/engine/rules";
+import { findVenue } from "~/engine/venues";
 import { addDays, weekday } from "~/lib/time";
 
 type TemplateContext = Pick<Context, "today" | "venues">;
@@ -103,11 +103,11 @@ function weatherText(weather: HourWeather) {
 
 // Offers are all in the city the user asked for, so it isn't repeated.
 function slotText(slot: Slot, ctx: TemplateContext) {
-  return `${findVenue(slot.venueId, ctx).name} ${when(slot, ctx)}`;
+  return `${findVenue(slot.venueId, ctx.venues).name} ${when(slot, ctx)}`;
 }
 
 function where(slot: Slot, ctx: TemplateContext) {
-  return `${findVenue(slot.venueId, ctx).name} in ${slot.city}`;
+  return `${findVenue(slot.venueId, ctx.venues).name} in ${slot.city}`;
 }
 
 function when(slot: Slot, ctx: TemplateContext) {
